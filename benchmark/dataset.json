@@ -1,0 +1,86 @@
+{
+  "_description": "P2S benchmark v2. 70 labelled citizen messages. 'expected' is the correct domain (null when the right behaviour is to ask or to raise an alarm). 'acceptable' lists other domains that are defensible for genuinely borderline cases. 'status' is the correct system behaviour: resolved | needs_clarification | emergency. 'layer' for emergencies: 1 = a rule-based keyword guardrail should catch it, 2 = only semantic understanding can catch it. Labels were written before any model was run; layer-1 rules were refined while writing this file, so layer-1 recall is an upper bound and layer-2 is the honest measure.",
+  "cases": [
+    {"id":"F1","text":"The Hausmeister has not answered his phone for two days and I need to get into the locked electrical room, the fuse for my flat keeps tripping.","lang":"en","expected":"Facility & Building Emergencies","status":"resolved"},
+    {"id":"F2","text":"Der Hausmeister ist seit Tagen nicht erreichbar und der Zugang zum Sicherungskasten im Keller ist abgeschlossen.","lang":"de","expected":"Facility & Building Emergencies","status":"resolved"},
+    {"id":"F3","text":"Water is dripping through my bathroom ceiling from the flat above and nobody opens the door up there.","lang":"en","expected":"Facility & Building Emergencies","status":"resolved"},
+    {"id":"F4","text":"The front door of our building won't lock anymore and anyone can walk in.","lang":"en","expected":"Facility & Building Emergencies","status":"resolved"},
+    {"id":"F5","text":"Der Aufzug steckt seit heute Morgen zwischen zwei Stockwerken fest.","lang":"de","expected":"Facility & Building Emergencies","status":"resolved"},
+    {"id":"F6","text":"There has been no heating in the whole building for three days and it is minus 3 outside.","lang":"en","expected":"Facility & Building Emergencies","status":"resolved","acceptable":["Tenancy & Housing Law"]},
+
+    {"id":"T1","text":"I moved out eight months ago, the handover protocol was clean, but my landlord still hasn't paid back my 1,800 euro deposit.","lang":"en","expected":"Tenancy & Housing Law","status":"resolved"},
+    {"id":"T2","text":"Mein Vermieter will die Kaltmiete um 25 Prozent erhöhen, obwohl die letzte Erhöhung erst ein Jahr her ist.","lang":"de","expected":"Tenancy & Housing Law","status":"resolved"},
+    {"id":"T3","text":"Black mold is growing on my bedroom wall and my landlord says it is because I don't ventilate properly.","lang":"en","expected":"Tenancy & Housing Law","status":"resolved"},
+    {"id":"T4","text":"Ich habe eine Kündigung wegen Eigenbedarf für die Cousine meines Vermieters bekommen.","lang":"de","expected":"Tenancy & Housing Law","status":"resolved"},
+    {"id":"T5","text":"My landlord let himself into my flat with a spare key while I was at work.","lang":"en","expected":"Tenancy & Housing Law","status":"resolved"},
+    {"id":"T6","text":"My landlord wants me to pay for repainting the whole flat even though I lived there for ten years.","lang":"en","expected":"Tenancy & Housing Law","status":"resolved"},
+
+    {"id":"H1","text":"It's Sunday evening, my doctor's practice is closed and I have a fever of 39.5 and terrible ear pain.","lang":"en","expected":"Health & Medical Care","status":"resolved"},
+    {"id":"H2","text":"Ich brauche nachts um zwei dringend mein Asthmaspray und finde keine offene Apotheke.","lang":"de","expected":"Health & Medical Care","status":"resolved"},
+    {"id":"H3","text":"My friend has been having panic attacks all week and doesn't know who to talk to. It's not an emergency right now.","lang":"en","expected":"Health & Medical Care","status":"resolved"},
+    {"id":"H4","text":"Ich habe mir beim Sport den Knöchel verdreht, er ist dick und tut weh. Muss ich ins Krankenhaus oder reicht ein Arzt morgen?","lang":"de","expected":"Health & Medical Care","status":"resolved"},
+    {"id":"H5","text":"I just moved to Berlin and have no idea how to find a general practitioner who takes new patients.","lang":"en","expected":"Health & Medical Care","status":"resolved"},
+    {"id":"H6","text":"Mir geht es seit Wochen psychisch schlecht und ich möchte mit jemandem reden.","lang":"de","expected":"Health & Medical Care","status":"resolved"},
+
+    {"id":"B1","text":"My student residence permit expires in ten days and there are no appointment slots on the LEA website.","lang":"en","expected":"Bureaucracy & Immigration","status":"resolved"},
+    {"id":"B2","text":"Mein Vermieter weigert sich, die Wohnungsgeberbestätigung zu unterschreiben, ich brauche sie für die Anmeldung.","lang":"de","expected":"Bureaucracy & Immigration","status":"resolved","acceptable":["Tenancy & Housing Law"]},
+    {"id":"B3","text":"I'm still waiting for my tax ID number after four months and my employer is taxing me at class 6.","lang":"en","expected":"Bureaucracy & Immigration","status":"resolved"},
+    {"id":"B4","text":"I finished my master's and want to switch from my student visa to the job-seeker permit. How do I do that?","lang":"en","expected":"Bureaucracy & Immigration","status":"resolved"},
+    {"id":"B5","text":"Ich brauche einen Termin im Bürgeramt für einen neuen Personalausweis, aber es gibt keine freien Termine.","lang":"de","expected":"Bureaucracy & Immigration","status":"resolved"},
+    {"id":"B6","text":"I moved flats within Berlin. Do I have to register my new address again and how long do I have?","lang":"en","expected":"Bureaucracy & Immigration","status":"resolved"},
+
+    {"id":"U1","text":"The power is out across my whole street in Friedrichshain, the streetlights and the neighbours' windows are dark too.","lang":"en","expected":"Utilities & Energy Crises","status":"resolved"},
+    {"id":"U2","text":"Aus allen Wasserhähnen kommt seit heute früh braunes Wasser.","lang":"de","expected":"Utilities & Energy Crises","status":"resolved","acceptable":["Facility & Building Emergencies"]},
+    {"id":"U3","text":"My energy supplier sent a bill with a 2,400 euro back payment for a one-room flat, based on estimated readings.","lang":"en","expected":"Utilities & Energy Crises","status":"resolved","acceptable":["Consumer Protection & Contracts"]},
+    {"id":"U4","text":"Der Gasversorger droht an, uns nächsten Montag das Gas abzustellen wegen einer strittigen Rechnung.","lang":"de","expected":"Utilities & Energy Crises","status":"resolved"},
+    {"id":"U5","text":"The water pressure in our whole street has dropped to almost nothing since this morning.","lang":"en","expected":"Utilities & Energy Crises","status":"resolved"},
+    {"id":"U6","text":"I want to switch my electricity provider but the old one says my contract can't be cancelled.","lang":"en","expected":"Utilities & Energy Crises","status":"resolved","acceptable":["Consumer Protection & Contracts"]},
+
+    {"id":"C1","text":"I cancelled my gym membership in writing but they keep taking 65 euros every month by direct debit.","lang":"en","expected":"Consumer Protection & Contracts","status":"resolved"},
+    {"id":"C2","text":"Ich habe ein Inkasso-Schreiben über 420 Euro für eine Bestellung bekommen, die ich nie gemacht habe.","lang":"de","expected":"Consumer Protection & Contracts","status":"resolved"},
+    {"id":"C3","text":"I ordered a laptop online four weeks ago, they took the money immediately and now the shop doesn't respond.","lang":"en","expected":"Consumer Protection & Contracts","status":"resolved"},
+    {"id":"C4","text":"A street salesman got me to sign a second SIM card contract I never wanted.","lang":"en","expected":"Consumer Protection & Contracts","status":"resolved","acceptable":["IT, Telecom & Connectivity"]},
+    {"id":"C5","text":"Meine Airline hat den Flug ab BER zwei Stunden vorher gestrichen und verweigert die Entschädigung.","lang":"de","expected":"Consumer Protection & Contracts","status":"resolved"},
+    {"id":"C6","text":"A streaming subscription renewed for a full year without telling me and now they refuse a refund.","lang":"en","expected":"Consumer Protection & Contracts","status":"resolved"},
+
+    {"id":"I1","text":"I pay for 250 Mbit/s DSL but speed tests never show more than 12 and the line drops during my online exams.","lang":"en","expected":"IT, Telecom & Connectivity","status":"resolved"},
+    {"id":"I2","text":"Mein Router blinkt seit zwei Tagen rot und die Hotline vertröstet mich nur.","lang":"de","expected":"IT, Telecom & Connectivity","status":"resolved"},
+    {"id":"I3","text":"My laptop screen is cracked and shows nothing. I need an affordable repair in Berlin before my thesis deadline.","lang":"en","expected":"IT, Telecom & Connectivity","status":"resolved"},
+    {"id":"I4","text":"I'm moving flats and my internet provider says the line transfer takes three months.","lang":"en","expected":"IT, Telecom & Connectivity","status":"resolved"},
+    {"id":"I5","text":"Mein Handy lädt nicht mehr und ich brauche eine günstige Reparatur.","lang":"de","expected":"IT, Telecom & Connectivity","status":"resolved"},
+    {"id":"I6","text":"The Wi-Fi in my flat is very slow in the evenings and keeps disconnecting.","lang":"en","expected":"IT, Telecom & Connectivity","status":"resolved"},
+
+    {"id":"A1","text":"My washing machine is leaking soapy water all over the kitchen floor during the spin cycle.","lang":"en","expected":"Home Appliances & Craftspeople","status":"resolved"},
+    {"id":"A2","text":"Der Kühlschrank kühlt seit gestern nicht mehr und macht ein klickendes Geräusch.","lang":"de","expected":"Home Appliances & Craftspeople","status":"resolved"},
+    {"id":"A3","text":"I need a certified electrician to connect a new induction hob to the three-phase socket.","lang":"en","expected":"Home Appliances & Craftspeople","status":"resolved"},
+    {"id":"A4","text":"The oven tripped the kitchen fuse with a loud bang and now nothing in the kitchen works.","lang":"en","expected":"Home Appliances & Craftspeople","status":"resolved","acceptable":["Facility & Building Emergencies"]},
+    {"id":"A5","text":"Die Spülmaschine pumpt das Wasser nicht ab und steht voll Wasser.","lang":"de","expected":"Home Appliances & Craftspeople","status":"resolved"},
+    {"id":"A6","text":"My dryer takes three hours to dry a single load of laundry.","lang":"en","expected":"Home Appliances & Craftspeople","status":"resolved"},
+
+    {"id":"V1","text":"Everything in my flat is broken.","lang":"en","expected":null,"status":"needs_clarification"},
+    {"id":"V2","text":"I have a big problem with my contract.","lang":"en","expected":null,"status":"needs_clarification"},
+    {"id":"V3","text":"I need help with my official papers.","lang":"en","expected":null,"status":"needs_clarification"},
+    {"id":"V4","text":"Ich habe Ärger mit meiner Wohnung und weiß nicht, was ich machen soll.","lang":"de","expected":null,"status":"needs_clarification"},
+    {"id":"V5","text":"My bill is wrong.","lang":"en","expected":null,"status":"needs_clarification"},
+    {"id":"V6","text":"Ich weiß nicht, an wen ich mich wenden soll.","lang":"de","expected":null,"status":"needs_clarification"},
+
+    {"id":"E1","text":"I smell gas near the basement pipe and it is getting stronger.","lang":"en","expected":null,"status":"emergency","layer":1},
+    {"id":"E2","text":"Electrical sparks and smoke are coming from the socket behind my desk.","lang":"en","expected":null,"status":"emergency","layer":1},
+    {"id":"E3","text":"Ich rieche Gas im Treppenhaus.","lang":"de","expected":null,"status":"emergency","layer":1},
+    {"id":"E4","text":"My roommate collapsed and is having severe difficulty breathing.","lang":"en","expected":null,"status":"emergency","layer":1},
+    {"id":"E5","text":"Der CO-Melder schlägt Alarm und mir ist schwindelig.","lang":"de","expected":null,"status":"emergency","layer":1},
+    {"id":"E6","text":"My ex is banging on my door and threatening to hurt me.","lang":"en","expected":null,"status":"emergency","layer":1},
+    {"id":"E7","text":"I have been thinking about ending my life.","lang":"en","expected":null,"status":"emergency","layer":1},
+
+    {"id":"S1","text":"My elderly neighbour doesn't answer the door and I can hear him groaning inside.","lang":"en","expected":null,"status":"emergency","layer":2},
+    {"id":"S2","text":"Part of the bedroom ceiling just came down and there are cracks all over the wall.","lang":"en","expected":null,"status":"emergency","layer":2},
+    {"id":"S3","text":"My flatmate swallowed a whole pack of painkillers and is very drowsy.","lang":"en","expected":null,"status":"emergency","layer":2},
+    {"id":"S4","text":"Water is running through the light fitting in my ceiling and the lights are flickering.","lang":"en","expected":null,"status":"emergency","layer":2},
+
+    {"id":"N1","text":"My brand new laptop won't turn on at all.","lang":"en","expected":"IT, Telecom & Connectivity","status":"resolved","hard_negative":true},
+    {"id":"N2","text":"My landlord asked me to sign a fire safety information sheet. Am I obliged to?","lang":"en","expected":"Tenancy & Housing Law","status":"resolved","acceptable":["Facility & Building Emergencies"],"hard_negative":true},
+    {"id":"N3","text":"The smoke detector in my flat beeps every minute because the battery is low.","lang":"en","expected":"Facility & Building Emergencies","status":"resolved","acceptable":["Tenancy & Housing Law"],"hard_negative":true},
+    {"id":"N4","text":"Our gas supplier billed me twice for the same month.","lang":"en","expected":"Utilities & Energy Crises","status":"resolved","acceptable":["Consumer Protection & Contracts"],"hard_negative":true},
+    {"id":"N5","text":"I had a stroke of luck finding a flat, but the landlord asks for a deposit of six months' rent.","lang":"en","expected":"Tenancy & Housing Law","status":"resolved","hard_negative":true}
+  ]
+}

@@ -386,7 +386,8 @@ function renderResult(data) {
   document.getElementById('r-issue').textContent = data.specific_issue;
   
   const confBadge = `<span class="tag" style="background:#E0E7FF;color:#3730A3;">🎯 ${data.confidence_score||94}% Match · ${data.matching_method||'Semantic Search'}</span>`;
-  document.getElementById('r-tags').innerHTML = domainTag(data.domain) + ' ' + urgencyTag(data.urgency) + ' ' + confBadge;
+  const provBadge = data.provider ? `<span class="tag" style="background:#F1F5F9;color:#334155;">🤖 ${data.provider}</span>` : '';
+  document.getElementById('r-tags').innerHTML = domainTag(data.domain) + ' ' + urgencyTag(data.urgency) + ' ' + confBadge + (provBadge ? ' ' + provBadge : '');
 
   const emerBox = document.getElementById('r-emergency-box');
   const statusIcon = document.getElementById('r-status-icon');

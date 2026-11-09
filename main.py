@@ -8,6 +8,7 @@ import httpx
 
 from backend.schemas import ProblemRequest, ClarificationRequest, TriageResponse
 from backend.triage_engine import triage_initial_problem, triage_clarification
+from backend.llm_providers import LLMError, OllamaProvider, get_provider, get_active_name, set_active
 from backend.knowledge_base import SERVICES_DATABASE
 from backend.database import init_db, log_session, get_stats, clear_sessions, add_service_db
 
@@ -56,6 +57,8 @@ def start_triage(request: ProblemRequest):
         result = triage_initial_problem(request.problem_description)
         log_session(result.session_id, result.domain, result.urgency, result.status, result.specific_issue)
         return result
+    except LLMError as e:
+        raise HTTPException(status_code=503, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Triage engine error: {str(e)}")
 
@@ -66,6 +69,8 @@ def answer_clarification(request: ClarificationRequest):
         result = triage_clarification(request)
         log_session(result.session_id, result.domain, result.urgency, result.status, result.specific_issue)
         return result
+    except LLMError as e:
+        raise HTTPException(status_code=503, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Triage engine error: {str(e)}")
 
@@ -115,10 +120,38 @@ def admin_clear_sessions():
 
 @app.get("/api/admin/ollama-status", tags=["Admin"])
 async def check_ollama():
-    """Check if a local Ollama instance is running on port 11434."""
-    try:
-        async with httpx.AsyncClient(timeout=2.0) as client:
-            r = await client.get("http://localhost:11434/api/tags")
-            return {"available": r.status_code == 200}
-    except Exception:
-        return {"available": False}
+    """Report whether a local Ollama server is running and which models are installed."""
+    ollama = get_provider("ollama")
+    models = ollama.installed_models()
+    return {"available": ollama.is_available(), "models": models, "selected_model": ollama.model}
+
+
+class ProviderPayload(BaseModel):
+    provider: str
+    model: str | None = None
+
+
+@app.get("/api/admin/provider", tags=["Admin"])
+def get_provider_config():
+    """Currently active LLM provider (gemini = cloud, ollama = local/offline)."""
+    active = get_provider()
+    return {"active": get_active_name(), "label": active.label,
+            "gemini_model": get_provider("gemini").model, "ollama_model": get_provider("ollama").model}
+
+
+@app.post("/api/admin/provider", tags=["Admin"])
+def set_provider_config(payload: ProviderPayload):
+    """Switch the active LLM provider at runtime, optionally changing its model."""
+    name = payload.provider.lower()
+    if name not in ("gemini", "ollama"):
+        raise HTTPException(status_code=400, detail="provider must be 'gemini' or 'ollama'")
+    if payload.model:
+        get_provider(name).model = payload.model
+    if name == "ollama":
+        ollama = get_provider("ollama")
+        if not ollama.is_available():
+            raise HTTPException(status_code=503, detail="Ollama is not running on localhost:11434.")
+        if ollama.model not in ollama.installed_models():
+            raise HTTPException(status_code=409, detail=f"Model '{ollama.model}' is not installed. Run: ollama pull {ollama.model}")
+    set_active(name)
+    return {"active": name, "label": get_provider().label}

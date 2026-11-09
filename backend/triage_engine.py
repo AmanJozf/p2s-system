@@ -1,22 +1,9 @@
-import os
-import json
-import uuid
 import re
-from dotenv import load_dotenv
-from google import genai
-from google.genai import types
+import uuid
 
 from backend.schemas import TriageResponse, MatchedService, ClarificationRequest
 from backend.knowledge_base import SERVICES_DATABASE, EMERGENCY_SERVICES
-
-# Load .env
-dotenv_path = os.path.join(os.path.dirname(__file__), '..', '.env')
-load_dotenv(dotenv_path)
-
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-MODEL_NAME = "gemini-3.5-flash-lite"
-
-client = genai.Client(api_key=GEMINI_API_KEY)
+from backend.llm_providers import get_provider
 
 DOMAINS = [
     "Facility & Building Emergencies",
@@ -26,180 +13,231 @@ DOMAINS = [
     "Utilities & Energy Crises",
     "Consumer Protection & Contracts",
     "IT, Telecom & Connectivity",
-    "Home Appliances & Craftspeople"
+    "Home Appliances & Craftspeople",
 ]
 
-# Emergency keyword guardrail detector for physical danger / life-safety
+FACILITY = "Facility & Building Emergencies"
+HEALTH = "Health & Medical Care"
+
+# --- Layer 1: deterministic safety guardrail ---------------------------------
+# Patterns are phrase-level (not bare words) to avoid false alarms such as
+# "brand new laptop" or "fire safety inspection".
+_F = re.IGNORECASE | re.UNICODE
 EMERGENCY_PATTERNS = [
-    (r"\b(gas\s*leak|gasgeruch|smell(ing)?\s+gas|gas\s+smell)\b", "Gas Leak Hazard", "Evacuate immediately! Do not touch light switches, open windows, and call NBB Gas Emergency (030 7872 72) or 112 from outside."),
-    (r"\b(fire|feuer|brand|smoke\s+pouring|burning\s+wires?|sparks?\s+from\s+socket)\b", "Fire / Electrical Hazard", "Urgent danger: Call 112 (Feuerwehr) immediately. If safe, switch off main circuit breaker."),
-    (r"\b(chest\s*pain|can't\s*breathe|unconscious|heart\s*attack|stroke|severe\s*bleeding)\b", "Life-threatening Medical Emergency", "Life safety emergency: Dial 112 (Notarzt / Rettungsdienst) immediately."),
-    (r"\b(domestic\s*violence|häusliche\s*gewalt|physical\s*threat|forced\s*out\s*tonight|assaulted)\b", "Personal Safety Threat", "Immediate danger: Dial 110 (Police). For confidential 24/7 help call 116 016 (Hilfetelefon Gewalt gegen Frauen).")
+    (re.compile(r"\b(gas\s*leak\w*|gas\s+smell\w*|smell(?:s|ing|ed)?\s+(?:of\s+)?gas|gas\s+(?:is\s+)?leaking|gasgeruch|gasaustritt|rieche\s+gas|riecht\s+(?:es\s+)?nach\s+gas|gas\s*geruch)\b", _F),
+     "Gas Leak Hazard", FACILITY,
+     "Evacuate immediately! Do not touch light switches or flames, open windows on your way out, and call the NBB gas emergency line (030 7872 72) or 112 from outside."),
+    (re.compile(r"\b(carbon\s+monoxide|kohlenmonoxid|co[\s-]+(?:alarm|detector|melder|warner))\b", _F),
+     "Carbon Monoxide Hazard", FACILITY,
+     "Leave the building now, open doors and windows on the way out, and call 112 from outside. Do not go back in."),
+    (re.compile(r"\b(on\s+fire|caught\s+fire|catching\s+fire|fire\s+broke\s+out|(?:house|flat|apartment|building|kitchen)\s+fire|smoke\s+(?:is\s+|are\s+)?(?:pouring|coming)|sparks?\s+and\s+smoke|burning\s+(?:smell|wires?|cables?)|sparks?\s+(?:from|coming\s+from|flying)|es\s+brennt|wohnungsbrand|kabelbrand|brandgeruch|rauchentwicklung|funken\s+aus|electric(?:al)?\s+shock|electrocut\w*|stromschlag)\b", _F),
+     "Fire / Electrical Hazard", FACILITY,
+     "Urgent danger: call 112 (Feuerwehr) immediately. If it is safe, switch off the main circuit breaker and leave the building."),
+    (re.compile(r"\b(chest\s+pain|(?:can'?t|cannot|not)\s+breath\w*|difficulty\s+breathing|unconscious|unresponsive|(?:had|having|suffered|suspected|possible)\s+(?:a\s+)?stroke(?!\s+of)|heart\s+attack|severe(?:ly)?\s+bleeding|bleeding\s+heavily|overdos(?:e|ed)|seizure|anaphyla\w+|(?:someone|he|she|roommate|friend|neighbou?r|partner|mother|father|mum|dad)\s+(?:has\s+|just\s+)?collapsed|brustschmerz\w*|herzinfarkt|schlaganfall|bewusstlos\w*|atemnot|keine\s+luft|starke\s+blutung|überdosis|krampfanfall)\b", _F),
+     "Life-threatening Medical Emergency", HEALTH,
+     "Life-safety emergency: dial 112 (Notarzt / Rettungsdienst) immediately and stay on the line."),
+    (re.compile(r"\b(suicid\w*|kill\s+myself|end(?:ing)?\s+my\s+life|want\s+to\s+die|selbstmord|suizid\w*|mich\s+umbringen)\b", _F),
+     "Acute Mental-Health Crisis", HEALTH,
+     "You are not alone. If you are in immediate danger call 112. Free, confidential 24/7 support: TelefonSeelsorge 0800 111 0 111 or the Berliner Krisendienst."),
+    (re.compile(r"\b(domestic\s+violence|häusliche\s+gewalt|(?:being|was|got|been)\s+(?:attacked|assaulted|threatened)|threaten\w*\s+(?:to\s+)?(?:kill|hurt|hit)\s+me|(?:hitting|beating)\s+me|bedroht\w*|schlägt\s+mich|forced\s+out\s+tonight)\b", _F),
+     "Personal Safety Threat", HEALTH,
+     "Immediate danger: dial 110 (Police). For confidential 24/7 help call 116 016 (Hilfetelefon Gewalt gegen Frauen)."),
 ]
+
 
 def check_emergency_guardrail(text: str):
-    for pattern, issue, notice in EMERGENCY_PATTERNS:
-        if re.search(pattern, text, re.IGNORECASE):
-            return issue, notice
-    return None, None
+    """Return (issue, notice, domain) for the first matching hazard, else (None, None, None)."""
+    for pattern, issue, domain, notice in ((p, i, d, n) for p, i, d, n in EMERGENCY_PATTERNS):
+        if pattern.search(text):
+            return issue, notice, domain
+    return None, None, None
 
-SYSTEM_PROMPT = f"""You are the P2S (Problem-to-Service) Triage Engine, operating in Berlin, Germany.
-Your mission is to bridge the "Terminology Gap" for citizens: translate their plain-English or German emotional problem description into a structured, actionable diagnosis and connect them with verified support services.
 
-AVAILABLE DOMAINS:
-{json.dumps(DOMAINS, indent=2)}
+def _emergency_response(session_id, issue, notice, domain, method, provider) -> TriageResponse:
+    services = [
+        MatchedService(name=e["name"], role=e["role"], official_link=e["official_link"],
+                       is_free=e["is_free"], phone=e.get("phone"), relevance_score=99)
+        for e in EMERGENCY_SERVICES
+    ]
+    return TriageResponse(
+        session_id=session_id,
+        status="emergency",
+        domain=domain,
+        urgency="CRITICAL_EMERGENCY",
+        confidence_score=99,
+        matching_method=method,
+        provider=provider,
+        is_emergency=True,
+        emergency_notice=notice,
+        specific_issue=f"CRITICAL SAFETY HAZARD: {issue}",
+        action_checklist=[
+            "Ensure your immediate personal safety and move away from the hazard.",
+            notice,
+            "Warn other people nearby if it is safe to do so.",
+            "Wait for emergency services at a safe distance.",
+        ],
+        recommended_services=services,
+    )
 
-LOCAL GERMAN LEGAL & SYSTEM CONTEXT:
-- Tenancy disputes follow German Civil Code (BGB), e.g. § 551 BGB (landlord has 3-6 months to inspect/return Mietkaution), § 536 BGB (Mängelanzeige and Mietminderung for mold/heating).
-- Building issues (Hausmeister, locked fuse boxes, heating room, main water valve) belong to 'Facility & Building Emergencies' (route to Hausverwaltung / Havariedienst 24h Notdienst).
-- Medical non-emergencies outside office hours go to 116 117 (Ärztlicher Bereitschaftsdienst).
-- Bureaucracy issues (Anmeldung, visa, citizenship, Ausländerbehörde/LEA) belong to 'Bureaucracy & Immigration' (Bürgertelefon 115, LEA Berlin).
-- Internet/Telecom quality issues go to 'IT, Telecom & Connectivity' (Bundesnetzagentur Breitbandmessung).
 
-INSTRUCTIONS:
-1. Detect whether the situation is already clear or requires clarification.
-2. If the user's description is vague (e.g. "my room is bad", "internet bad", "need help with papers"), set status="needs_clarification", formulate ONE focused follow-up question, and provide 2 to 4 suggested multiple-choice options.
-3. If the situation is clear (e.g. "Hausmeister not answering, need electrical room for fuse box", "Landlord hasn't returned deposit after 7 months", "Visa expires next week, no appointment at LEA"):
-   - status="resolved"
-   - urgency: "Low", "Medium", or "High"
-   - specific_issue: clear summary of the core issue
-   - action_checklist: exactly 3 to 4 sequential, practical steps the citizen must take right now (citing proper German procedures: written Mängelanzeige, finding Hausaushang 24h Notdienst, calling 115, gathering lease/proof).
-4. Do NOT hallucinate phone numbers or organization names. Only reference official German bodies.
+SYSTEM_PROMPT = f"""You are the P2S (Problem-to-Service) Triage Engine for Berlin, Germany.
+You translate a citizen's plain-language problem (English or German) into a structured diagnosis. Write every free-text field in the SAME language the citizen used.
+
+DOMAINS (choose exactly one):
+{chr(10).join('- ' + d for d in DOMAINS)}
+
+ROUTING RULES:
+- {FACILITY}: problems INSIDE the building the landlord/Hausverwaltung controls: Hausmeister unreachable, locked fuse/electrical/boiler room, burst pipe inside the building, broken entrance lock, stuck elevator, no heating in the whole building. Route to Hausverwaltung / Havariedienst (24h).
+- Tenancy & Housing Law: deposit (Kaution, § 551 BGB), rent increases, Mietminderung / mold (§ 536 BGB), termination (Kündigung, Eigenbedarf), landlord entering without permission.
+- Utilities & Energy Crises: street- or district-wide power cut, water or gas supply from the utility, energy bills and supplier disputes.
+- Health & Medical Care: non-emergency medical needs, on-call doctor (116 117), emergency pharmacy, mental-health support.
+- Bureaucracy & Immigration: Anmeldung, residence permit/visa, LEA, Bürgeramt, tax ID, blocked account paperwork.
+- Consumer Protection & Contracts: subscriptions, gym contracts, debt collection (Inkasso), online shop disputes, flight compensation.
+- IT, Telecom & Connectivity: internet speed or outage, router, ISP contract, broken laptop or phone.
+- Home Appliances & Craftspeople: broken appliance (washing machine, fridge, oven), needing a certified electrician or plumber.
+
+RULES:
+1. If the message is too vague to pick a domain (e.g. "everything is broken", "I need help with papers"), set status="needs_clarification", ask ONE specific follow_up_question and give 2-4 suggested_options.
+2. If it is clear, set status="resolved" with urgency Low/Medium/High, a one-sentence specific_issue and an action_checklist of 3-4 concrete steps using proper German procedures (written Mängelanzeige, Hausaushang with the 24h Notdienst number, Breitbandmessung, calling 115, ...).
+3. confidence_score: integer 60-98 for how clearly the text matches the chosen domain; lower it when the case is borderline.
+4. immediate_danger: true ONLY if someone's life or physical safety is at risk right now (gas/CO, fire, electrocution, medical emergency, violence, suicide risk). A broken appliance, a cut power line outage or an angry landlord is NOT immediate danger.
+5. Never invent phone numbers or organisation names.
+6. Reply with JSON only.
 """
 
+_BASE_PROPS = {
+    "domain": {"type": "string", "enum": DOMAINS},
+    "confidence_score": {"type": "integer"},
+    "urgency": {"type": "string", "enum": ["Low", "Medium", "High"]},
+    "specific_issue": {"type": "string"},
+    "immediate_danger": {"type": "boolean"},
+    "action_checklist": {"type": "array", "items": {"type": "string"}},
+}
+
+TRIAGE_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "status": {"type": "string", "enum": ["resolved", "needs_clarification"]},
+        **_BASE_PROPS,
+        "follow_up_question": {"type": ["string", "null"]},
+        "suggested_options": {"type": "array", "items": {"type": "string"}},
+    },
+    "required": ["status", "domain", "confidence_score", "urgency", "specific_issue",
+                 "immediate_danger", "follow_up_question", "suggested_options", "action_checklist"],
+}
+
+CLARIFY_SCHEMA = {
+    "type": "object",
+    "properties": dict(_BASE_PROPS),
+    "required": ["domain", "confidence_score", "urgency", "specific_issue",
+                 "immediate_danger", "action_checklist"],
+}
+
+
 def match_services_for_domain(domain: str):
-    services = SERVICES_DATABASE.get(domain, [])
-    matched = []
-    for s in services:
-        matched.append(MatchedService(
+    return [
+        MatchedService(
             name=s["name"],
             role=s["role"],
             official_link=s["official_link"],
             is_free=s["is_free"],
-            region=s.get("region", "Berlin / Germany")
-        ))
-    return matched
+            region=s.get("region", "Berlin / Germany"),
+        )
+        for s in SERVICES_DATABASE.get(domain, [])
+    ]
 
-def triage_initial_problem(problem_text: str) -> TriageResponse:
+
+def _clean_domain(value) -> str:
+    return value if value in DOMAINS else FACILITY
+
+
+def _clean_confidence(value, default=85) -> int:
+    try:
+        return max(0, min(100, int(value)))
+    except (TypeError, ValueError):
+        return default
+
+
+def _llm_danger_response(session_id, data, provider) -> TriageResponse:
+    return _emergency_response(
+        session_id,
+        issue=data.get("specific_issue") or "Possible immediate danger",
+        notice="The assistant detected possible immediate danger. If anyone is in danger call 112 now (police: 110).",
+        domain=_clean_domain(data.get("domain")),
+        method="Safety check by language model (layer 2)",
+        provider=provider.label,
+    )
+
+
+def triage_initial_problem(problem_text: str, provider_name: str | None = None) -> TriageResponse:
     session_id = str(uuid.uuid4())[:8]
 
-    # 1. Run safety guardrails first
-    emergency_issue, emergency_notice = check_emergency_guardrail(problem_text)
-    if emergency_issue:
-        emer_svcs = [
-            MatchedService(name=e["name"], role=e["role"], official_link=e["official_link"], is_free=e["is_free"], phone=e.get("phone"), relevance_score=99)
-            for e in EMERGENCY_SERVICES
-        ]
-        return TriageResponse(
-            session_id=session_id,
-            status="emergency",
-            domain="Facility & Building Emergencies" if "Gas" in emergency_issue or "Fire" in emergency_issue else "Health & Medical Care",
-            urgency="CRITICAL_EMERGENCY",
-            confidence_score=99,
-            matching_method="Safety Guardrail & Vector Match",
-            is_emergency=True,
-            emergency_notice=emergency_notice,
-            specific_issue=f"CRITICAL SAFETY HAZARD: {emergency_issue}",
-            action_checklist=[
-                "Ensure your immediate personal safety and exit the hazard zone immediately.",
-                emergency_notice,
-                "Notify nearby residents or building occupants if safe to do so.",
-                "Await emergency services outside the building at a safe distance."
-            ],
-            recommended_services=emer_svcs
-        )
+    # Layer 1: deterministic guardrail, no model call, ~0 ms
+    issue, notice, domain = check_emergency_guardrail(problem_text)
+    if issue:
+        return _emergency_response(session_id, issue, notice, domain,
+                                   method="Safety guardrail (rule-based, layer 1)", provider="guardrail")
 
-    # 2. Call Gemini for Semantic Domain & Intent Extraction
-    prompt = f"""Problem description: "{problem_text}"
+    # Layer 2 + classification: one LLM call (Gemini or Ollama, same interface)
+    provider = get_provider(provider_name)
+    prompt = f'Citizen message: "{problem_text}"\n\nRespond with the JSON object.'
+    data = provider.generate_json(prompt, system=SYSTEM_PROMPT, schema=TRIAGE_SCHEMA)
 
-Perform semantic intent extraction and match it against the 8 Berlin domains.
-Estimate a semantic confidence score (between 75 and 98) based on how clearly the text aligns with the domain.
+    if data.get("immediate_danger") is True:
+        return _llm_danger_response(session_id, data, provider)
 
-Respond strictly with a JSON object adhering to this schema:
-{{
-  "status": "resolved" or "needs_clarification",
-  "domain": one of the listed 8 domains,
-  "confidence_score": 94,
-  "urgency": "Low", "Medium", or "High",
-  "specific_issue": "summary of issue",
-  "follow_up_question": "question if needs_clarification, else null",
-  "suggested_options": ["option 1", "option 2"] if needs_clarification else [],
-  "action_checklist": ["step 1", "step 2", "step 3"] if resolved else []
-}}
-"""
+    status = data.get("status") if data.get("status") in ("resolved", "needs_clarification") else "resolved"
+    domain = _clean_domain(data.get("domain"))
 
-    response = client.models.generate_content(
-        model=MODEL_NAME,
-        contents=f"{SYSTEM_PROMPT}\n\nUser Problem:\n{prompt}",
-        config=types.GenerateContentConfig(
-            response_mime_type="application/json",
-            temperature=0.2
-        )
-    )
-
-    data = json.loads(response.text)
-
-    domain = data.get("domain", "Facility & Building Emergencies")
-    if domain not in DOMAINS:
-        domain = "Facility & Building Emergencies"
-
-    recommended_services = match_services_for_domain(domain) if data.get("status") == "resolved" else []
-
-    confidence = int(data.get("confidence_score", 92))
     return TriageResponse(
         session_id=session_id,
-        status=data.get("status", "resolved"),
+        status=status,
         domain=domain,
         urgency=data.get("urgency", "Medium"),
-        confidence_score=confidence,
-        matching_method="Semantic Intent & Vector Mapping",
+        confidence_score=_clean_confidence(data.get("confidence_score")),
+        matching_method="LLM intent classification + verified service lookup",
+        provider=provider.label,
         is_emergency=False,
         specific_issue=data.get("specific_issue", "Citizen Support Request"),
-        follow_up_question=data.get("follow_up_question"),
-        suggested_options=data.get("suggested_options", []),
-        action_checklist=data.get("action_checklist", []),
-        recommended_services=recommended_services
+        follow_up_question=data.get("follow_up_question") if status == "needs_clarification" else None,
+        suggested_options=data.get("suggested_options", []) if status == "needs_clarification" else [],
+        action_checklist=data.get("action_checklist", []) if status == "resolved" else [],
+        recommended_services=match_services_for_domain(domain) if status == "resolved" else [],
     )
 
-def triage_clarification(req: ClarificationRequest) -> TriageResponse:
-    prompt = f"""Original problem: "{req.original_problem}"
-Clarification asked: "{req.previous_question}"
-Citizen answer: "{req.user_answer}"
 
-The problem is now clarified. Provide the final diagnosis and resolution plan for Berlin, Germany.
-Respond strictly with a JSON object adhering to this schema:
-{{
-  "status": "resolved",
-  "domain": one of the 8 domains,
-  "urgency": "Low", "Medium", or "High",
-  "specific_issue": "summary of issue",
-  "action_checklist": ["step 1", "step 2", "step 3", "step 4"]
-}}
-"""
+def triage_clarification(req: ClarificationRequest, provider_name: str | None = None) -> TriageResponse:
+    # The clarification answer can reveal danger too ("...and I can smell gas now")
+    issue, notice, g_domain = check_emergency_guardrail(f"{req.original_problem} {req.user_answer}")
+    if issue:
+        return _emergency_response(req.session_id, issue, notice, g_domain,
+                                   method="Safety guardrail (rule-based, layer 1)", provider="guardrail")
 
-    response = client.models.generate_content(
-        model=MODEL_NAME,
-        contents=f"{SYSTEM_PROMPT}\n\nUser Problem:\n{prompt}",
-        config=types.GenerateContentConfig(
-            response_mime_type="application/json",
-            temperature=0.2
-        )
+    provider = get_provider(provider_name)
+    prompt = (
+        f'Original message: "{req.original_problem}"\n'
+        f'Clarifying question asked: "{req.previous_question}"\n'
+        f'Citizen answer: "{req.user_answer}"\n\n'
+        "The problem is now clarified. Give the final diagnosis and a 3-4 step plan as the JSON object."
     )
+    data = provider.generate_json(prompt, system=SYSTEM_PROMPT, schema=CLARIFY_SCHEMA)
 
-    data = json.loads(response.text)
-    domain = data.get("domain", "Facility & Building Emergencies")
-    if domain not in DOMAINS:
-        domain = "Facility & Building Emergencies"
+    if data.get("immediate_danger") is True:
+        return _llm_danger_response(req.session_id, data, provider)
 
+    domain = _clean_domain(data.get("domain"))
     return TriageResponse(
         session_id=req.session_id,
         status="resolved",
         domain=domain,
         urgency=data.get("urgency", "Medium"),
+        confidence_score=_clean_confidence(data.get("confidence_score")),
+        matching_method="LLM intent classification + verified service lookup",
+        provider=provider.label,
         is_emergency=False,
         specific_issue=data.get("specific_issue", "Diagnosed Issue"),
         follow_up_question=None,
         suggested_options=[],
         action_checklist=data.get("action_checklist", []),
-        recommended_services=match_services_for_domain(domain)
+        recommended_services=match_services_for_domain(domain),
     )

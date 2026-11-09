@@ -143,22 +143,26 @@
             <div class="form-grid">
               <div class="form-field full">
                 <label class="label">AI Provider</label>
-                <select class="input" id="cfg-provider">
+                <select class="input" id="cfg-provider" onchange="updateProviderVisibility()">
                   <option value="gemini">☁️ Gemini (Cloud — Online)</option>
                   <option value="ollama">🔒 Ollama (Local — Offline)</option>
                 </select>
               </div>
-              <div class="form-field full">
+              <div class="form-field full" id="box-gemini-model">
                 <label class="label">Gemini Model</label>
                 <select class="input" id="cfg-model">
-                  <option value="gemini-3.5-flash-lite">gemini-3.5-flash-lite (Recommended)</option>
+                  <option value="gemini-3.5-flash-lite">gemini-3.5-flash-lite (Fast & Reliable, Recommended)</option>
+                  <option value="gemini-3.5-flash">gemini-3.5-flash (Balanced)</option>
                   <option value="gemini-3.8-flash">gemini-3.8-flash (High quality)</option>
-                  <option value="gemma-4-31b-it">gemma-4-31b-it (Open weights)</option>
                 </select>
               </div>
-              <div class="form-field full">
-                <label class="label">Ollama Local Model (for offline mode)</label>
-                <input class="input" id="cfg-ollama-model" value="llama3.2" placeholder="e.g. llama3.2, mistral, gemma2"/>
+              <div class="form-field full" id="box-ollama-model">
+                <label class="label">Ollama Local Model (Offline Mode)</label>
+                <select class="input" id="cfg-ollama-model">
+                  <option value="llama3.2:3b">llama3.2:3b (Fast CPU Inference, 2.0 GB)</option>
+                  <option value="qwen2.5:7b">qwen2.5:7b (Multilingual Precision, 4.7 GB)</option>
+                  <option value="llama3.1:8b">llama3.1:8b (Deep Reasoning, 4.9 GB)</option>
+                </select>
               </div>
               <div class="form-actions">
                 <button class="btn btn-primary" onclick="saveConfig()">💾 Save Configuration</button>
@@ -285,6 +289,41 @@ async function addService(e) {
   } catch { showToast('❌ Failed to add service.'); }
 }
 
+function updateProviderVisibility() {
+  const p = document.getElementById('cfg-provider').value;
+  document.getElementById('box-gemini-model').style.display = (p === 'gemini') ? 'block' : 'none';
+  document.getElementById('box-ollama-model').style.display = (p === 'ollama') ? 'block' : 'none';
+}
+
+async function loadConfig() {
+  try {
+    const [pRes, oRes] = await Promise.all([
+      fetch('/api/admin/provider').then(r => r.json()),
+      fetch('/api/admin/ollama-status').then(r => r.json()).catch(() => ({ available: false, models: [] }))
+    ]);
+
+    if (pRes.active) {
+      document.getElementById('cfg-provider').value = pRes.active;
+    }
+    if (pRes.gemini_model) {
+      document.getElementById('cfg-model').value = pRes.gemini_model;
+    }
+
+    const ollamaSelect = document.getElementById('cfg-ollama-model');
+    if (oRes.models && oRes.models.length > 0) {
+      ollamaSelect.innerHTML = oRes.models.map(m =>
+        `<option value="${m}" ${m === pRes.ollama_model ? 'selected' : ''}>${m}</option>`
+      ).join('');
+    } else if (pRes.ollama_model) {
+      ollamaSelect.value = pRes.ollama_model;
+    }
+
+    updateProviderVisibility();
+  } catch (err) {
+    console.error('Failed to load provider config:', err);
+  }
+}
+
 async function checkStatus() {
   // Gemini
   try {
@@ -293,13 +332,16 @@ async function checkStatus() {
   } catch {
     document.getElementById('gemini-status').innerHTML = '<span class="status-dot dot-red"></span><strong>Unavailable</strong>';
   }
-  // Ollama (check if port 11434 is reachable via API proxy)
+  // Ollama
   try {
     const r = await fetch('/api/admin/ollama-status');
     const d = await r.json();
-    document.getElementById('ollama-status').innerHTML = d.available
-      ? '<span class="status-dot dot-green"></span><strong>Running</strong>'
-      : '<span class="status-dot dot-red"></span><strong>Not running — install Ollama to enable</strong>';
+    if (d.available) {
+      const modelCount = d.models ? d.models.length : 0;
+      document.getElementById('ollama-status').innerHTML = `<span class="status-dot dot-green"></span><strong>Running (${modelCount} models available)</strong>`;
+    } else {
+      document.getElementById('ollama-status').innerHTML = '<span class="status-dot dot-red"></span><strong>Not running — start Ollama to enable</strong>';
+    }
   } catch {
     document.getElementById('ollama-status').innerHTML = '<span class="status-dot dot-red"></span><strong>Not running</strong>';
   }
@@ -311,7 +353,29 @@ async function checkStatus() {
   } catch {}
 }
 
-function saveConfig() { showToast('✅ Configuration saved (model will apply on next triage).'); }
+async function saveConfig() {
+  const provider = document.getElementById('cfg-provider').value;
+  const model = provider === 'gemini'
+    ? document.getElementById('cfg-model').value
+    : document.getElementById('cfg-ollama-model').value;
+
+  try {
+    const res = await fetch('/api/admin/provider', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ provider, model })
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || 'Failed to update provider');
+    }
+    const data = await res.json();
+    showToast(`✅ Active provider set to: ${data.label}`);
+    checkStatus();
+  } catch (e) {
+    showToast(`❌ Error: ${e.message}`);
+  }
+}
 
 async function clearSessions() {
   if (!confirm('Delete all session records from database?')) return;
@@ -329,6 +393,7 @@ function clearLocalStorage() {
 
 // Init
 loadServices();
+loadConfig();
 </script>
 </body>
 </html>
