@@ -258,7 +258,9 @@ def run_evaluation():
     print("=" * 80)
 
     # 1. Export CSV
-    csv_file = os.path.join(os.path.dirname(__file__), "evaluation_results.csv")
+    docs_dir = os.path.join(os.path.dirname(__file__), "docs")
+    os.makedirs(docs_dir, exist_ok=True)
+    csv_file = os.path.join(docs_dir, "evaluation_results.csv")
     with open(csv_file, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=results[0].keys())
         writer.writeheader()
@@ -266,7 +268,7 @@ def run_evaluation():
     print(f"Saved raw test metrics to: {csv_file}")
 
     # 2. Export Markdown Report for Thesis
-    report_file = os.path.join(os.path.dirname(__file__), "EVALUATION_REPORT.md")
+    report_file = os.path.join(docs_dir, "EVALUATION_REPORT.md")
     with open(report_file, "w", encoding="utf-8") as f:
         f.write("# P2S Empirical Evaluation Report (MSc Thesis Results)\n\n")
         f.write(f"**Evaluation Date:** {time.strftime('%Y-%m-%d %H:%M:%S')}\n")

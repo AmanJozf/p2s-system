@@ -6,7 +6,7 @@
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/Framework-FastAPI-green.svg)](https://fastapi.tiangolo.com/)
 [![Status](https://img.shields.io/badge/Build-Passing-brightgreen.svg)](https://github.com/AmanJozf/p2s-system)
-[![Accuracy](https://img.shields.io/badge/Benchmark_Accuracy-95.2%25-blueviolet.svg)](EVALUATION_REPORT.md)
+[![Accuracy](https://img.shields.io/badge/Benchmark_Accuracy-95.2%25-blueviolet.svg)](docs/EVALUATION_REPORT.md)
 
 ---
 
@@ -78,7 +78,8 @@ The system was evaluated against a ground-truth benchmark suite of 21 complex re
 | **Safety Interception Latency** | **<0.01 seconds** | Deterministic | **SUB-MILLISECOND** |
 | **Contact Hallucination Rate** | **0.0%** | Zero fake contacts | **GUARANTEED** |
 
-Full metrics available in [`EVALUATION_REPORT.md`](EVALUATION_REPORT.md) and [`evaluation_results.csv`](evaluation_results.csv).
+Full metrics available in [`docs/EVALUATION_REPORT.md`](docs/EVALUATION_REPORT.md) and [`docs/evaluation_results.csv`](docs/evaluation_results.csv).  
+Visual system architecture: [`docs/MINDMAP.md`](docs/MINDMAP.md).
 
 ---
 
