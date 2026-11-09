@@ -40,6 +40,7 @@ PAGES = {
     "/history":   "frontend/history.html",
     "/about":     "frontend/about.html",
     "/admin":     "frontend/admin.html",
+    "/preview":   "frontend/preview.html",
 }
 
 for route, filepath in PAGES.items():

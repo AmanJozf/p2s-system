@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>P2S UI Redesign Comparison Preview</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap');
+    .font-jakarta { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .font-inter { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 p-4 md:p-8 font-inter">
+
+  <div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="text-center mb-10">
+      <span class="inline-block px-3 py-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full text-xs font-semibold tracking-wider uppercase mb-3">
+        Visual Style Showcase
+      </span>
+      <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
+        Choose Your Preferred Interface Style
+      </h1>
+      <p class="text-slate-400 text-sm md:text-base mt-2 max-w-2xl mx-auto">
+        Compare the two custom design directions below. Both completely remove amateur emojis and generic AI templates in favor of bespoke, production-grade craft.
+      </p>
+    </div>
+
+    <!-- Comparison Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+
+      <!-- ================= STYLE 1: MODERN DARK (Linear / Cyberpunk Civic) ================= -->
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/90 shadow-2xl overflow-hidden transition-all hover:border-indigo-500/50">
+        <!-- Badge Bar -->
+        <div class="px-5 py-3 bg-slate-950/60 border-b border-slate-800 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-indigo-500 animate-pulse"></span>
+            <span class="text-xs font-bold uppercase tracking-wider text-indigo-400">Option 1: Modern Dark Mode</span>
+          </div>
+          <span class="text-xs text-slate-400 font-medium">Style: Linear / Vercel / Raycast</span>
+        </div>
+
+        <!-- Mockup Canvas -->
+        <div class="p-6 bg-[#090D16]">
+          <!-- Mini Navbar -->
+          <div class="flex items-center justify-between pb-4 border-b border-slate-800/80 mb-6">
+            <div class="flex items-center gap-2">
+              <div class="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center font-bold text-white text-xs shadow-lg shadow-indigo-500/30">P</div>
+              <span class="font-extrabold text-sm tracking-tight text-white">P2S</span>
+            </div>
+            <div class="flex items-center gap-4 text-xs text-slate-400">
+              <span class="text-white font-medium flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                Triage
+              </span>
+              <span class="hover:text-slate-200 cursor-pointer">Services</span>
+              <span class="hover:text-slate-200 cursor-pointer">Analytics</span>
+              <span class="hover:text-slate-200 cursor-pointer">Admin</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded text-[11px] bg-slate-800 text-slate-300 border border-slate-700">EN</span>
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            </div>
+          </div>
+
+          <!-- Stepper -->
+          <div class="flex items-center justify-center gap-4 mb-6">
+            <div class="flex items-center gap-2">
+              <div class="w-6 h-6 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center ring-4 ring-indigo-500/20">1</div>
+              <span class="text-xs font-semibold text-white tracking-wide">Describe</span>
+            </div>
+            <div class="w-8 h-[1px] bg-slate-800"></div>
+            <div class="flex items-center gap-2 opacity-40">
+              <div class="w-6 h-6 rounded-full bg-slate-800 text-slate-400 text-xs font-bold flex items-center justify-center">2</div>
+              <span class="text-xs font-medium text-slate-400">Clarify</span>
+            </div>
+            <div class="w-8 h-[1px] bg-slate-800"></div>
+            <div class="flex items-center gap-2 opacity-40">
+              <div class="w-6 h-6 rounded-full bg-slate-800 text-slate-400 text-xs font-bold flex items-center justify-center">3</div>
+              <span class="text-xs font-medium text-slate-400">Resolved</span>
+            </div>
+          </div>
+
+          <!-- Triage Card -->
+          <div class="rounded-xl border border-slate-800/80 bg-slate-900/60 p-5 backdrop-blur-md shadow-xl relative overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-indigo-500/40 to-transparent"></div>
+
+            <h3 class="text-base font-bold text-white tracking-tight">What's your problem?</h3>
+            <p class="text-xs text-slate-400 mt-1">Describe what happened in plain German or English.</p>
+
+            <div class="mt-4">
+              <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Describe your situation</label>
+              <div class="w-full h-24 rounded-lg bg-slate-950/80 border border-slate-800 p-3 text-xs text-slate-300 focus-within:border-indigo-500/80 transition-colors">
+                <span class="text-slate-500 italic">e.g. My landlord has not returned my 1500 euro deposit after 8 months...</span>
+              </div>
+            </div>
+
+            <!-- Action Bar -->
+            <div class="flex items-center justify-between mt-3 text-xs">
+              <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-850 text-slate-300 border border-slate-700/60 transition-colors">
+                <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"/></svg>
+                Voice Dictation
+              </button>
+              <span class="text-slate-500 text-[11px]">Ctrl+Enter to submit</span>
+            </div>
+
+            <!-- Submit Button -->
+            <button class="w-full mt-4 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs tracking-wide shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 transition-all">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              Analyse & Route Problem
+            </button>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="p-5 bg-slate-950/40 border-t border-slate-800 text-xs text-slate-400 space-y-1">
+          <div class="font-semibold text-slate-200">Key Characteristics:</div>
+          <div>• Obsidian dark palette with subtle luminous indigo accents</div>
+          <div>• Clean minimalist SVG iconography (zero childish emojis)</div>
+          <div>• Professional developer / engineer grade aesthetic (like Linear & Raycast)</div>
+        </div>
+      </div>
+
+
+      <!-- ================= STYLE 2: SWISS / MINIMAL LIGHT (Apple / Stripe / GovTech) ================= -->
+      <div class="rounded-2xl border border-slate-200 bg-white shadow-2xl overflow-hidden transition-all hover:border-slate-400 font-jakarta">
+        <!-- Badge Bar -->
+        <div class="px-5 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-slate-900"></span>
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-800">Option 2: Swiss Editorial Light</span>
+          </div>
+          <span class="text-xs text-slate-500 font-medium">Style: Stripe / GovTech / Apple</span>
+        </div>
+
+        <!-- Mockup Canvas -->
+        <div class="p-6 bg-slate-50/70 text-slate-900">
+          <!-- Mini Navbar -->
+          <div class="flex items-center justify-between pb-4 border-b border-slate-200 mb-6">
+            <div class="flex items-center gap-2">
+              <div class="w-7 h-7 rounded-lg bg-slate-900 flex items-center justify-center font-bold text-white text-xs">P</div>
+              <span class="font-extrabold text-sm tracking-tight text-slate-900">P2S Berlin</span>
+            </div>
+            <div class="flex items-center gap-4 text-xs text-slate-600 font-medium">
+              <span class="text-slate-900 font-bold flex items-center gap-1.5 pb-0.5 border-b-2 border-slate-900">
+                Triage
+              </span>
+              <span class="hover:text-slate-900 cursor-pointer">Services</span>
+              <span class="hover:text-slate-900 cursor-pointer">Analytics</span>
+              <span class="hover:text-slate-900 cursor-pointer">Admin</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded text-[11px] bg-slate-200/80 text-slate-700 font-bold">EN</span>
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            </div>
+          </div>
+
+          <!-- Stepper -->
+          <div class="flex items-center justify-center gap-4 mb-6">
+            <div class="flex items-center gap-2">
+              <div class="w-6 h-6 rounded-full bg-slate-900 text-white text-xs font-bold flex items-center justify-center">1</div>
+              <span class="text-xs font-bold text-slate-900 tracking-tight">Describe</span>
+            </div>
+            <div class="w-8 h-[1px] bg-slate-300"></div>
+            <div class="flex items-center gap-2 opacity-40">
+              <div class="w-6 h-6 rounded-full bg-slate-200 text-slate-600 text-xs font-bold flex items-center justify-center">2</div>
+              <span class="text-xs font-medium text-slate-600">Clarify</span>
+            </div>
+            <div class="w-8 h-[1px] bg-slate-300"></div>
+            <div class="flex items-center gap-2 opacity-40">
+              <div class="w-6 h-6 rounded-full bg-slate-200 text-slate-600 text-xs font-bold flex items-center justify-center">3</div>
+              <span class="text-xs font-medium text-slate-600">Resolved</span>
+            </div>
+          </div>
+
+          <!-- Triage Card -->
+          <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h3 class="text-base font-extrabold text-slate-900 tracking-tight">What is your problem?</h3>
+            <p class="text-xs text-slate-500 mt-1">Describe what happened in plain German or English.</p>
+
+            <div class="mt-4">
+              <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Describe your situation</label>
+              <div class="w-full h-24 rounded-lg bg-slate-50/60 border border-slate-200 p-3 text-xs text-slate-800">
+                <span class="text-slate-400 italic">e.g. My landlord has not returned my 1500 euro deposit after 8 months...</span>
+              </div>
+            </div>
+
+            <!-- Action Bar -->
+            <div class="flex items-center justify-between mt-3 text-xs">
+              <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium border border-slate-200 transition-colors">
+                <svg class="w-3.5 h-3.5 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"/></svg>
+                Voice Dictation
+              </button>
+              <span class="text-slate-400 text-[11px]">Ctrl+Enter to submit</span>
+            </div>
+
+            <!-- Submit Button -->
+            <button class="w-full mt-4 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs tracking-wide shadow flex items-center justify-center gap-2 transition-all">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              Analyse & Route Problem
+            </button>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="p-5 bg-slate-50 border-t border-slate-200 text-xs text-slate-600 space-y-1">
+          <div class="font-bold text-slate-800">Key Characteristics:</div>
+          <div>• Crisp porcelain white background with high-contrast slate typography</div>
+          <div>• Hairline 1px borders and refined tactile shadow elevations</div>
+          <div>• High-end European public-service portal look (modern Swiss design)</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Live Toggle Note -->
+    <div class="mt-8 text-center p-4 rounded-xl border border-slate-800 bg-slate-900/50">
+      <p class="text-sm text-slate-300">
+        💡 <strong class="text-white">Pro Tip:</strong> We can also support <strong class="text-indigo-400">both</strong> by adding a 1-click <strong>Sun/Moon (Light/Dark)</strong> toggle button in the navbar so you can switch between them whenever you want!
+      </p>
+    </div>
+
+  </div>
+
+</body>
+</html>
