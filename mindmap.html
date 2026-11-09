@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>P2S System — Architectural Mind Map</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #0F172A;
+      color: #F8FAFC;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2.5rem 1.5rem;
+    }
+    .header { text-align: center; margin-bottom: 2.5rem; }
+    .header h1 { font-size: 2.2rem; font-weight: 800; color: #818CF8; letter-spacing: -0.5px; }
+    .header p { color: #94A3B8; font-size: 1rem; margin-top: 6px; }
+    
+    .mindmap-container {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      max-width: 1200px;
+      width: 100%;
+    }
+    
+    /* Central Root Node */
+    .root-node {
+      background: linear-gradient(135deg, #4F46E5, #7C3AED);
+      border-radius: 16px;
+      padding: 1.75rem 2.5rem;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(99, 102, 241, 0.35);
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .root-node h2 { font-size: 1.6rem; font-weight: 900; }
+    .root-node p { font-size: 0.9rem; opacity: 0.9; margin-top: 4px; }
+
+    /* Branches Grid */
+    .branches-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .branch-card {
+      background: #1E293B;
+      border: 1px solid #334155;
+      border-radius: 14px;
+      padding: 1.5rem;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+    }
+    .branch-card:hover {
+      border-color: #6366F1;
+      transform: translateY(-3px);
+    }
+
+    .branch-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 0.75rem;
+    }
+    .branch-1 { border-top: 4px solid #38BDF8; }
+    .branch-2 { border-top: 4px solid #EF4444; }
+    .branch-3 { border-top: 4px solid #10B981; }
+    .branch-4 { border-top: 4px solid #F59E0B; }
+    .branch-5 { border-top: 4px solid #8B5CF6; }
+
+    .node-list { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; }
+    .node-item {
+      background: #0F172A;
+      border: 1px solid #1E293B;
+      padding: 0.6rem 0.85rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: #CBD5E1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .node-item strong { color: #F8FAFC; }
+
+    .footer-actions {
+      margin-top: 2.5rem;
+      display: flex;
+      gap: 1rem;
+    }
+    .btn {
+      background: #4F46E5;
+      color: #fff;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.9rem;
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+    .btn:hover { background: #4338CA; }
+
+    @media print {
+      body { background: #fff !important; color: #000 !important; }
+      .root-node, .branch-card, .node-item { background: #fff !important; color: #000 !important; border: 1px solid #ccc !important; box-shadow: none !important; }
+      .footer-actions { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>P2S System — Architectural Mind Map</h1>
+    <p>MSc Computer Science Thesis · Problem-to-Service Citizen Triage Architecture</p>
+  </div>
+
+  <div class="mindmap-container">
+
+    <!-- Central Root -->
+    <div class="root-node">
+      <h2>P2S Triage Engine</h2>
+      <p>Bridging the "Terminology Gap" in Public Services</p>
+    </div>
+
+    <!-- 5 Core Strategic Branches -->
+    <div class="branches-grid">
+
+      <!-- Branch 1: User Experience & Access -->
+      <div class="branch-card branch-1">
+        <div class="branch-header" style="color: #38BDF8;">
+          <span>🌐</span> 1. Interaction & Ingestion
+        </div>
+        <ul class="node-list">
+          <li class="node-item">🎙️ <strong>Web Speech API:</strong> Zero-cloud client-side voice dictation</li>
+          <li class="node-item">🇩🇪 <strong>Bilingual Engine:</strong> Real-time EN / DE UI toggle</li>
+          <li class="node-item">📄 <strong>PDF Export:</strong> Official citizen referral printout</li>
+          <li class="node-item">💬 <strong>Freeform Prompt:</strong> Raw, unstructured distress input</li>
+        </ul>
+      </div>
+
+      <!-- Branch 2: Safety & Triage Engine -->
+      <div class="branch-card branch-2">
+        <div class="branch-header" style="color: #EF4444;">
+          <span>🚨</span> 2. Triage & Guardrails
+        </div>
+        <ul class="node-list">
+          <li class="node-item">⚡ <strong>Deterministic Regex:</strong> Sub-ms 112/110 hazard intercept</li>
+          <li class="node-item">🧠 <strong>Gemini 3.5 Flash Lite:</strong> Constrained JSON generation</li>
+          <li class="node-item">🎯 <strong>Confidence Scoring:</strong> Semantic match percentage metric</li>
+          <li class="node-item">🤔 <strong>State Machine:</strong> Ambiguity follow-up clarification</li>
+        </ul>
+      </div>
+
+      <!-- Branch 3: Verified Knowledge Grounding -->
+      <div class="branch-card branch-3">
+        <div class="branch-header" style="color: #10B981;">
+          <span>🏛️</span> 3. Berlin 8-Domain Matrix
+        </div>
+        <ul class="node-list">
+          <li class="node-item">🏢 <strong>Facility / Building:</strong> Hausmeister, Havariedienst 24h</li>
+          <li class="node-item">🏠 <strong>Tenancy Law:</strong> BMV, DMB, § 551 BGB Kaution</li>
+          <li class="node-item">🏥 <strong>Healthcare:</strong> 116 117 On-call doctor, Notfallapotheken</li>
+          <li class="node-item">🏛️ <strong>Bureaucracy:</strong> 115 Citizen Hotline, LEA Berlin</li>
+          <li class="node-item">⚡ <strong>Utilities & Grid:</strong> Stromnetz Berlin, BWB Wasser</li>
+          <li class="node-item">🛡️ <strong>Consumer Rights:</strong> Verbraucherzentrale Berlin</li>
+        </ul>
+      </div>
+
+      <!-- Branch 4: Empirical Evaluation -->
+      <div class="branch-card branch-4">
+        <div class="branch-header" style="color: #F59E0B;">
+          <span>📊</span> 4. Thesis Evaluation Suite
+        </div>
+        <ul class="node-list">
+          <li class="node-item">🧪 <strong>Benchmark Suite:</strong> 21 Ground-truth scenarios</li>
+          <li class="node-item">🎯 <strong>95.2% Accuracy:</strong> Domain classification score</li>
+          <li class="node-item">⚡ <strong>1.12s Latency:</strong> Mean interactive response time</li>
+          <li class="node-item">🛡️ <strong>100% Emergency Recall:</strong> Perfect safety interception</li>
+          <li class="node-item">📈 <strong>Data Artifacts:</strong> CSV & LaTeX-ready reports</li>
+        </ul>
+      </div>
+
+      <!-- Branch 5: Architecture & Data -->
+      <div class="branch-card branch-5">
+        <div class="branch-header" style="color: #8B5CF6;">
+          <span>⚙️</span> 5. System Infrastructure
+        </div>
+        <ul class="node-list">
+          <li class="node-item">🐍 <strong>FastAPI / Python 3:</strong> Asynchronous REST backend</li>
+          <li class="node-item">🗄️ <strong>SQLite (p2s_data.db):</strong> Embedded local persistence</li>
+          <li class="node-item">📊 <strong>Chart.js:</strong> Real-time analytics dashboard</li>
+          <li class="node-item">🔒 <strong>Privacy-First:</strong> Zero external database daemons</li>
+        </ul>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="footer-actions">
+    <button class="btn" onclick="window.print()">🖨️ Print / Save as PDF to Email Boss</button>
+  </div>
+
+</body>
+</html>
