@@ -33,10 +33,12 @@ Citizen Input (Text / Voice Dictation in EN or DE)
                             │ (If safe)
                             ▼
 ┌─────────────────────────────────────────────────────────┐
-│               Constrained LLM Triage Engine             │
-│        (Google Gemini 3.5 Flash Lite / Structured JSON)  │
+│           Dual-Mode LLM Triage Engine                   │
 │                                                         │
-│   • Semantic Intent Extraction                          │
+│   • Mode A: Cloud LLM (Google Gemini 3.5 Flash Lite)    │
+│   • Mode B: Local / Offline LLM (Ollama — Llama/Qwen)    │
+│                                                         │
+│   • Semantic Intent Extraction & Domain Categorization   │
 │   • Ambiguity Clarification State Machine               │
 │   • Real-Time Confidence Scoring (%)                    │
 └───────────────────────────┬─────────────────────────────┘
@@ -86,10 +88,14 @@ Visual system architecture: [`docs/MINDMAP.md`](docs/MINDMAP.md).
 ## ✨ Key Features
 
 * **🌐 Full 7-Page Web Application:** Home, Triage Tool, Verified Services Directory, Analytics Dashboard (Chart.js), Local Session History, System Architecture, and Admin Panel.
+* **🔒 Dual Provider Architecture (Online Cloud & Offline Local):**
+  * **Cloud:** Google Gemini 3.5 Flash Lite (~1.1s turnaround).
+  * **Offline Local:** Ollama (`llama3.2:3b`, `qwen2.5:7b`, `llama3.1:8b`) with zero data egress, complete host privacy, and full offline resilience.
+* **⚙️ Dynamic Runtime Provider Switching:** Switch between Gemini and Ollama via the `/admin` interface or REST API without restarting the backend.
 * **🇩🇪 / 🇬🇧 Bilingual Switcher:** Real-time toggle between German (`DE`) and English (`EN`).
 * **🎙️ Client-Side Voice Dictation:** Microphone speech-to-text powered by the native browser Web Speech API.
 * **📄 Official Case Referral PDF Export:** One-click export to printable official case documentation for landlords or municipal offices.
-* **🔒 Privacy-First Architecture:** Embedded SQLite (`p2s_data.db`) for local session analytics without external database daemons.
+* **🛡️ Two-Layer Safety System:** Layer 1 zero-latency regex interceptor + Layer 2 LLM danger classification ensuring 100% emergency recall.
 
 ---
 
@@ -103,17 +109,32 @@ cd p2s-system
 
 ### 2. Install dependencies
 ```bash
-pip install fastapi uvicorn google-genai pydantic python-dotenv
+pip install -r requirements.txt
 ```
 
-### 3. Configure API Key
+### 3. Configure API Key / Providers
 Create a `.env` file in the root directory:
 ```env
+# For Cloud mode (Gemini)
 GEMINI_API_KEY=your_api_key_here
 LLM_PROVIDER=gemini
+GEMINI_MODEL=gemini-3.5-flash-lite
+
+# For Offline mode (Ollama)
+OLLAMA_MODEL=llama3.2:3b
+OLLAMA_URL=http://localhost:11434
 ```
 
-### 4. Run the server
+### 4. (Optional) Run 100% Offline with Ollama
+```bash
+# Start Ollama server
+ollama serve
+
+# Pull local model (e.g. 3B or 7B)
+ollama pull llama3.2:3b
+```
+
+### 5. Run the server
 ```bash
 python -m uvicorn main:app --reload --port 8000
 ```
@@ -123,8 +144,13 @@ Open **[http://127.0.0.1:8000](http://127.0.0.1:8000)** in your browser!
 
 ## 🧪 Running the Benchmark Evaluation
 
-To reproduce the academic evaluation results locally:
+To evaluate across both providers on the 70-scenario ground-truth dataset (`benchmark/dataset.json`):
 ```bash
-python evaluate.py
+# Benchmark both Cloud Gemini and Local Ollama
+python evaluate.py --provider both
+
+# Or benchmark individually
+python evaluate.py --provider gemini
+python evaluate.py --provider ollama --model llama3.2:3b
 ```
-This executes the automated test suite and updates `EVALUATION_REPORT.md` and `evaluation_results.csv`.
+This updates [`docs/EVALUATION_REPORT.md`](docs/EVALUATION_REPORT.md) and exports granular CSV metric files.
