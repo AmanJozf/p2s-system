@@ -133,6 +133,7 @@ body {
   border-radius: var(--radius);
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
+  width: 100%;
 }
 
 .card-body { padding: 1.75rem; }
