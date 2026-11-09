@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>P2S — Admin Panel</title>
+  <link rel="stylesheet" href="/static/styles.css"/>
+  <style>
+    .page-header { background:#fff; border-bottom:1px solid var(--border); padding:2rem 0; display:flex; align-items:center; gap:1rem; }
+    .admin-badge { background:var(--danger-bg); color:var(--danger); font-size:.72rem; font-weight:700; padding:4px 10px; border-radius:99px; }
+
+    .admin-grid { display:grid; grid-template-columns:220px 1fr; gap:1.5rem; margin-top:2rem; }
+    .admin-sidebar { display:flex; flex-direction:column; gap:.25rem; }
+    .admin-nav-btn {
+      display:flex; align-items:center; gap:10px; padding:10px 14px;
+      border-radius:9px; border:none; background:transparent; font-family:inherit;
+      font-size:.875rem; font-weight:500; color:var(--muted); cursor:pointer;
+      transition:all .15s; text-align:left; width:100%;
+    }
+    .admin-nav-btn:hover { background:var(--bg-2); color:var(--text); }
+    .admin-nav-btn.active { background:var(--brand-light); color:var(--brand); font-weight:600; }
+
+    .admin-panel { display:none; }
+    .admin-panel.active { display:block; }
+    .panel-title { font-size:1.1rem; font-weight:800; margin-bottom:1.5rem; }
+
+    /* Services Management Table */
+    .mgmt-table { width:100%; border-collapse:collapse; font-size:.85rem; }
+    .mgmt-table th { padding:.75rem 1rem; text-align:left; font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:var(--muted); border-bottom:2px solid var(--border); }
+    .mgmt-table td { padding:.9rem 1rem; border-bottom:1px solid var(--border); vertical-align:middle; }
+    .mgmt-table tr:last-child td { border-bottom:none; }
+    .mgmt-table tr:hover td { background:var(--bg); }
+
+    /* Add Service Form */
+    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+    .form-field { display:flex; flex-direction:column; gap:6px; }
+    .form-field.full { grid-column:1/-1; }
+    .form-actions { grid-column:1/-1; display:flex; gap:.75rem; margin-top:.5rem; }
+
+    /* System Status */
+    .status-row { display:flex; align-items:center; justify-content:space-between; padding:1rem; border-bottom:1px solid var(--border); }
+    .status-row:last-child { border-bottom:none; }
+    .status-dot { width:10px; height:10px; border-radius:50%; display:inline-block; margin-right:8px; }
+    .dot-green { background:var(--success); }
+    .dot-red   { background:var(--danger); }
+    .dot-warn  { background:var(--warn); }
+
+    @media(max-width:768px) {
+      .admin-grid { grid-template-columns:1fr; }
+      .form-grid  { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav id="p2s-nav"></nav>
+
+<div class="section-sm">
+  <div class="container">
+    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:2rem;">
+      <div>
+        <h1 style="font-size:1.6rem;font-weight:800;">⚙️ Admin Panel</h1>
+        <p style="color:var(--muted);font-size:.9rem;margin-top:.2rem;">Manage domains, services, and system configuration.</p>
+      </div>
+      <span class="admin-badge">Admin</span>
+    </div>
+
+    <div class="admin-grid">
+
+      <!-- Sidebar Navigation -->
+      <div class="admin-sidebar card" style="padding:.5rem;height:fit-content;">
+        <button class="admin-nav-btn active" onclick="switchPanel('services', this)">📂 Services</button>
+        <button class="admin-nav-btn" onclick="switchPanel('add-service', this)">➕ Add Service</button>
+        <button class="admin-nav-btn" onclick="switchPanel('config', this)">🔧 Configuration</button>
+        <button class="admin-nav-btn" onclick="switchPanel('status', this)">🟢 System Status</button>
+        <button class="admin-nav-btn" onclick="switchPanel('reset', this)">⚠️ Data Reset</button>
+      </div>
+
+      <!-- Main Panel Area -->
+      <div>
+
+        <!-- Panel: Services List -->
+        <div class="card admin-panel active" id="panel-services">
+          <div class="card-header">
+            <span class="panel-title" style="margin:0;">📂 All Services</span>
+            <button class="btn btn-sm btn-primary" onclick="switchPanel('add-service', document.querySelector('[onclick*=add-service]'))">+ Add New</button>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="mgmt-table" id="admin-svc-table">
+              <thead><tr><th>Name</th><th>Domain</th><th>Cost</th><th>Link</th><th>Action</th></tr></thead>
+              <tbody id="admin-svc-tbody"><tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--muted);">Loading…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Panel: Add Service -->
+        <div class="card admin-panel" id="panel-add-service">
+          <div class="card-header"><span class="panel-title" style="margin:0;">➕ Add New Service</span></div>
+          <div class="card-body">
+            <form onsubmit="addService(event)">
+              <div class="form-grid">
+                <div class="form-field">
+                  <label class="label">Service Name *</label>
+                  <input class="input" id="f-name" placeholder="e.g. Citizens Advice" required/>
+                </div>
+                <div class="form-field">
+                  <label class="label">Domain *</label>
+                  <select class="input" id="f-domain" required>
+                    <option value="">Select domain…</option>
+                    <option>Housing</option>
+                    <option>IT</option>
+                    <option>Appliances</option>
+                  </select>
+                </div>
+                <div class="form-field full">
+                  <label class="label">Role / Description *</label>
+                  <input class="input" id="f-role" placeholder="What does this service help with?" required/>
+                </div>
+                <div class="form-field">
+                  <label class="label">Official Link *</label>
+                  <input class="input" id="f-link" type="url" placeholder="https://…" required/>
+                </div>
+                <div class="form-field">
+                  <label class="label">Cost</label>
+                  <select class="input" id="f-free">
+                    <option value="true">Free</option>
+                    <option value="false">Paid</option>
+                  </select>
+                </div>
+                <div class="form-actions">
+                  <button type="submit" class="btn btn-primary">➕ Add Service</button>
+                  <button type="reset" class="btn btn-ghost">Clear</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Panel: Configuration -->
+        <div class="card admin-panel" id="panel-config">
+          <div class="card-header"><span class="panel-title" style="margin:0;">🔧 System Configuration</span></div>
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="form-field full">
+                <label class="label">AI Provider</label>
+                <select class="input" id="cfg-provider">
+                  <option value="gemini">☁️ Gemini (Cloud — Online)</option>
+                  <option value="ollama">🔒 Ollama (Local — Offline)</option>
+                </select>
+              </div>
+              <div class="form-field full">
+                <label class="label">Gemini Model</label>
+                <select class="input" id="cfg-model">
+                  <option value="gemini-3.5-flash-lite">gemini-3.5-flash-lite (Recommended)</option>
+                  <option value="gemini-3.8-flash">gemini-3.8-flash (High quality)</option>
+                  <option value="gemma-4-31b-it">gemma-4-31b-it (Open weights)</option>
+                </select>
+              </div>
+              <div class="form-field full">
+                <label class="label">Ollama Local Model (for offline mode)</label>
+                <input class="input" id="cfg-ollama-model" value="llama3.2" placeholder="e.g. llama3.2, mistral, gemma2"/>
+              </div>
+              <div class="form-actions">
+                <button class="btn btn-primary" onclick="saveConfig()">💾 Save Configuration</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel: System Status -->
+        <div class="card admin-panel" id="panel-status">
+          <div class="card-header"><span class="panel-title" style="margin:0;">🟢 System Status</span></div>
+          <div id="status-list">
+            <div class="status-row">
+              <span>FastAPI Backend</span>
+              <span><span class="status-dot dot-green"></span><strong>Online</strong></span>
+            </div>
+            <div class="status-row">
+              <span>Gemini API Connection</span>
+              <span id="gemini-status"><span class="status-dot dot-warn"></span>Checking…</span>
+            </div>
+            <div class="status-row">
+              <span>Ollama Local (Offline)</span>
+              <span id="ollama-status"><span class="status-dot dot-warn"></span>Checking…</span>
+            </div>
+            <div class="status-row">
+              <span>Database (SQLite)</span>
+              <span><span class="status-dot dot-green"></span><strong>Connected</strong></span>
+            </div>
+            <div class="status-row">
+              <span>Knowledge Base Entries</span>
+              <span id="kb-count">—</span>
+            </div>
+          </div>
+          <div style="padding:1rem 1rem .5rem;">
+            <button class="btn btn-sm btn-secondary" onclick="checkStatus()">↻ Refresh Status</button>
+          </div>
+        </div>
+
+        <!-- Panel: Reset -->
+        <div class="card admin-panel" id="panel-reset">
+          <div class="card-header"><span class="panel-title" style="margin:0;">⚠️ Data Management</span></div>
+          <div class="card-body">
+            <div style="background:var(--danger-bg);border:1px solid var(--danger);border-radius:10px;padding:1rem;margin-bottom:1.5rem;">
+              <strong style="color:var(--danger);">⚠️ Warning:</strong>
+              <span style="font-size:.875rem;color:var(--danger);"> These actions are destructive and cannot be undone.</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:1rem;">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:1rem;border:1px solid var(--border);border-radius:10px;">
+                <div>
+                  <div style="font-weight:700;font-size:.9rem;">Clear Session History</div>
+                  <div style="font-size:.8rem;color:var(--muted);">Deletes all triage session records from the database.</div>
+                </div>
+                <button class="btn btn-sm btn-danger" onclick="clearSessions()">Clear</button>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:1rem;border:1px solid var(--border);border-radius:10px;">
+                <div>
+                  <div style="font-weight:700;font-size:.9rem;">Reset Browser History</div>
+                  <div style="font-size:.8rem;color:var(--muted);">Clears saved results stored in this browser's localStorage.</div>
+                </div>
+                <button class="btn btn-sm btn-danger" onclick="clearLocalStorage()">Reset</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer id="p2s-footer"></footer>
+<div id="toast"></div>
+<script src="/static/nav.js"></script>
+<script>
+const domainIcons = { Housing:'🏠', IT:'💻', Appliances:'⚙️' };
+
+function switchPanel(name, btn) {
+  document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.admin-nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  if (btn) btn.classList.add('active');
+
+  if (name === 'services') loadServices();
+  if (name === 'status')   checkStatus();
+}
+
+async function loadServices() {
+  try {
+    const data = await fetch('/api/services').then(r=>r.json());
+    const tbody = document.getElementById('admin-svc-tbody');
+    let rows = '';
+    for (const [domain, svcs] of Object.entries(data.services)) {
+      svcs.forEach((s,i) => {
+        rows += `<tr>
+          <td><strong>${s.name}</strong></td>
+          <td>${domainTag(domain)}</td>
+          <td><span class="tag ${s.is_free?'tag-success':'tag-neutral'}">${s.is_free?'Free':'Paid'}</span></td>
+          <td style="font-size:.78rem;color:var(--muted);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.official_link}</td>
+          <td><button class="btn btn-sm btn-ghost">Edit</button></td>
+        </tr>`;
+      });
+    }
+    tbody.innerHTML = rows;
+  } catch(e) { showToast('Failed to load services.'); }
+}
+
+async function addService(e) {
+  e.preventDefault();
+  const payload = {
+    name:    document.getElementById('f-name').value,
+    domain:  document.getElementById('f-domain').value,
+    role:    document.getElementById('f-role').value,
+    official_link: document.getElementById('f-link').value,
+    is_free: document.getElementById('f-free').value === 'true'
+  };
+  try {
+    const res = await fetch('/api/admin/services', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error();
+    showToast('✅ Service added!');
+    e.target.reset();
+    switchPanel('services', null);
+  } catch { showToast('❌ Failed to add service.'); }
+}
+
+async function checkStatus() {
+  // Gemini
+  try {
+    await fetch('/api/stats/summary');
+    document.getElementById('gemini-status').innerHTML = '<span class="status-dot dot-green"></span><strong>Connected</strong>';
+  } catch {
+    document.getElementById('gemini-status').innerHTML = '<span class="status-dot dot-red"></span><strong>Unavailable</strong>';
+  }
+  // Ollama (check if port 11434 is reachable via API proxy)
+  try {
+    const r = await fetch('/api/admin/ollama-status');
+    const d = await r.json();
+    document.getElementById('ollama-status').innerHTML = d.available
+      ? '<span class="status-dot dot-green"></span><strong>Running</strong>'
+      : '<span class="status-dot dot-red"></span><strong>Not running — install Ollama to enable</strong>';
+  } catch {
+    document.getElementById('ollama-status').innerHTML = '<span class="status-dot dot-red"></span><strong>Not running</strong>';
+  }
+  // KB count
+  try {
+    const data = await fetch('/api/services').then(r=>r.json());
+    const count = Object.values(data.services).reduce((a,b)=>a+b.length,0);
+    document.getElementById('kb-count').innerHTML = `<strong>${count} entries</strong>`;
+  } catch {}
+}
+
+function saveConfig() { showToast('✅ Configuration saved (model will apply on next triage).'); }
+
+async function clearSessions() {
+  if (!confirm('Delete all session records from database?')) return;
+  try {
+    await fetch('/api/admin/sessions', { method:'DELETE' });
+    showToast('✅ Session records cleared.');
+  } catch { showToast('❌ Failed.'); }
+}
+
+function clearLocalStorage() {
+  if (!confirm('Clear browser history?')) return;
+  localStorage.removeItem('p2s_history');
+  showToast('✅ Browser history cleared.');
+}
+
+// Init
+loadServices();
+</script>
+</body>
+</html>

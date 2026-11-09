@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>P2S — Dashboard</title>
+  <link rel="stylesheet" href="/static/styles.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    .page-header { background:#fff; border-bottom:1px solid var(--border); padding:2rem 0; }
+    .page-header h1 { font-size:1.6rem; font-weight:800; }
+    .page-header p { color:var(--muted); font-size:.9rem; margin-top:.3rem; }
+
+    .kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:1.25rem; margin-bottom:2rem; }
+    .kpi-card {
+      background:#fff; border:1px solid var(--border); border-radius:var(--radius);
+      padding:1.25rem 1.5rem;
+    }
+    .kpi-label { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:var(--muted); }
+    .kpi-value { font-size:2rem; font-weight:900; color:var(--text); margin:.25rem 0 .1rem; line-height:1; }
+    .kpi-sub { font-size:.75rem; color:var(--muted); }
+    .kpi-icon { font-size:1.5rem; float:right; margin-top:-2.5rem; }
+
+    .charts-row { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; margin-bottom:2rem; }
+    .chart-card { background:#fff; border:1px solid var(--border); border-radius:var(--radius); padding:1.5rem; }
+    .chart-title { font-size:.85rem; font-weight:700; margin-bottom:1.25rem; }
+    .chart-wrap { position:relative; height:220px; }
+
+    .recent-table { width:100%; border-collapse:collapse; font-size:.85rem; }
+    .recent-table th { padding:.75rem 1rem; text-align:left; font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:var(--muted); border-bottom:2px solid var(--border); }
+    .recent-table td { padding:.85rem 1rem; border-bottom:1px solid var(--border); color:var(--text); }
+    .recent-table tr:last-child td { border-bottom:none; }
+    .recent-table tr:hover td { background:var(--bg); }
+
+    @media(max-width:768px) {
+      .kpi-row { grid-template-columns:1fr 1fr; }
+      .charts-row { grid-template-columns:1fr; }
+    }
+    @media(max-width:480px) { .kpi-row { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+
+<nav id="p2s-nav"></nav>
+
+<div class="page-header">
+  <div class="container">
+    <h1>📊 Analytics Dashboard</h1>
+    <p>Live usage statistics and insights across all triage sessions.</p>
+  </div>
+</div>
+
+<div class="section-sm">
+  <div class="container">
+
+    <!-- KPI Row -->
+    <div class="kpi-row" id="kpi-row">
+      <div class="kpi-card"><div class="kpi-label">Total Sessions</div><div class="kpi-value" id="k-total">—</div><div class="kpi-icon">🔍</div><div class="kpi-sub">All time</div></div>
+      <div class="kpi-card"><div class="kpi-label">Resolved Directly</div><div class="kpi-value" id="k-resolved">—</div><div class="kpi-icon">✅</div><div class="kpi-sub">No follow-up needed</div></div>
+      <div class="kpi-card"><div class="kpi-label">Needed Clarification</div><div class="kpi-value" id="k-clarified">—</div><div class="kpi-icon">🤔</div><div class="kpi-sub">Follow-up question asked</div></div>
+      <div class="kpi-card"><div class="kpi-label">Most Common Domain</div><div class="kpi-value" id="k-top-domain" style="font-size:1.2rem;margin-top:.4rem;">—</div><div class="kpi-icon">📂</div><div class="kpi-sub">By session count</div></div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title">🥧 Problems by Domain</div>
+        <div class="chart-wrap"><canvas id="chart-domain"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">⚡ Urgency Distribution</div>
+        <div class="chart-wrap"><canvas id="chart-urgency"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Recent Sessions -->
+    <div class="card">
+      <div class="card-header">
+        <span style="font-weight:700;">🕒 Recent Triage Sessions</span>
+        <button class="btn btn-sm btn-ghost" onclick="loadData()">↻ Refresh</button>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="recent-table" id="recent-table">
+          <thead><tr>
+            <th>Session ID</th><th>Domain</th><th>Urgency</th><th>Status</th><th>Time</th>
+          </tr></thead>
+          <tbody id="recent-tbody">
+            <tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--muted);">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer id="p2s-footer"></footer>
+<div id="toast"></div>
+<script src="/static/nav.js"></script>
+<script>
+let domainChart, urgencyChart;
+
+async function loadData() {
+  try {
+    const data = await fetch('/api/stats/summary').then(r=>r.json());
+
+    document.getElementById('k-total').textContent = data.total_sessions ?? 0;
+    document.getElementById('k-resolved').textContent = data.resolved ?? 0;
+    document.getElementById('k-clarified').textContent = data.needs_clarification ?? 0;
+
+    // Top domain
+    const domainData = data.by_domain || {};
+    const topDomain = Object.entries(domainData).sort((a,b)=>b[1]-a[1])[0];
+    document.getElementById('k-top-domain').textContent = topDomain ? topDomain[0] : '—';
+
+    // Domain chart
+    const dLabels = Object.keys(domainData);
+    const dVals   = Object.values(domainData);
+    if (domainChart) domainChart.destroy();
+    domainChart = new Chart(document.getElementById('chart-domain'), {
+      type:'doughnut',
+      data: {
+        labels: dLabels,
+        datasets:[{ data:dVals, backgroundColor:['#4F6EF7','#22C55E','#F59E0B','#94A3B8'], borderWidth:0 }]
+      },
+      options:{ plugins:{ legend:{ position:'bottom', labels:{ font:{size:12}, padding:16 } } }, cutout:'65%' }
+    });
+
+    // Urgency chart
+    const urgData = data.by_urgency || {};
+    const uLabels = ['Low','Medium','High'];
+    const uVals   = uLabels.map(u => urgData[u]||0);
+    if (urgencyChart) urgencyChart.destroy();
+    urgencyChart = new Chart(document.getElementById('chart-urgency'), {
+      type:'bar',
+      data: {
+        labels: uLabels,
+        datasets:[{ data:uVals, backgroundColor:['#22C55E','#F59E0B','#EF4444'], borderRadius:6, borderWidth:0 }]
+      },
+      options:{
+        plugins:{ legend:{display:false} },
+        scales:{ y:{ beginAtZero:true, grid:{color:'#F1F5F9'}, ticks:{stepSize:1} }, x:{ grid:{display:false} } }
+      }
+    });
+
+    // Recent sessions
+    const sessions = data.recent_sessions || [];
+    const tbody = document.getElementById('recent-tbody');
+    if (!sessions.length) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--muted);">No sessions yet. <a href="/triage" style="color:var(--brand)">Run your first triage →</a></td></tr>`;
+    } else {
+      tbody.innerHTML = sessions.map(s=>`
+        <tr>
+          <td><code style="font-size:.8rem;background:var(--bg);padding:2px 8px;border-radius:4px;">${s.session_id}</code></td>
+          <td>${domainTag(s.domain)}</td>
+          <td>${urgencyTag(s.urgency)}</td>
+          <td><span class="tag ${s.status==='resolved'?'tag-success':'tag-warn'}">${s.status==='resolved'?'✅ Resolved':'🤔 Clarified'}</span></td>
+          <td style="color:var(--muted);font-size:.8rem;">${fmtTime(s.created_at)}</td>
+        </tr>`).join('');
+    }
+  } catch(e) {
+    showToast('Could not load stats. Run a triage first to generate data.');
+  }
+}
+
+loadData();
+</script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+# Ignore sensitive API keys
+.env
+
+# Python cache & virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+
+# SQLite databases
+*.db
+*.sqlite3
+
+# OS files
+.DS_Store
+Thumbs.db

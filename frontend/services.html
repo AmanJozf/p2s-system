@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>P2S — Verified Services Directory</title>
+  <link rel="stylesheet" href="/static/styles.css"/>
+  <style>
+    .page-header { background:#fff; border-bottom:1px solid var(--border); padding:2rem 0; }
+    .page-header h1 { font-size:1.6rem; font-weight:800; }
+    .page-header p { color:var(--muted); font-size:.9rem; margin-top:.3rem; }
+
+    .toolbar { display:flex; gap:1rem; align-items:center; margin:2rem 0 1.5rem; flex-wrap:wrap; }
+    .search-wrap { position:relative; flex:1; min-width:240px; }
+    .search-wrap .input { padding-left:2.5rem; }
+    .search-icon { position:absolute; left:.8rem; top:50%; transform:translateY(-50%); color:var(--muted); font-size:.9rem; }
+
+    .filter-btns { display:flex; gap:.4rem; flex-wrap:wrap; margin-bottom:1.5rem; }
+    .filter-btn {
+      padding:6px 14px; border-radius:99px; border:1.5px solid var(--border);
+      background:#fff; font-size:.78rem; font-weight:600; cursor:pointer;
+      transition:all .15s; font-family:inherit; color:var(--muted);
+    }
+    .filter-btn:hover { border-color:var(--brand); color:var(--brand); }
+    .filter-btn.active { background:var(--brand); border-color:var(--brand); color:#fff; }
+
+    .services-count { font-size:.8rem; color:var(--muted); }
+    .svc-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:1.25rem; }
+
+    .svc-card {
+      background:#fff; border:1px solid var(--border); border-radius:var(--radius);
+      overflow:hidden; transition:all .2s; display:flex; flex-direction:column;
+    }
+    .svc-card:hover { border-color:var(--brand); box-shadow:var(--shadow-md); transform:translateY(-2px); }
+
+    .svc-card-top { padding:1.25rem; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px; }
+    .svc-card-icon { width:46px; height:46px; border-radius:10px; background:var(--brand-light); display:grid; place-items:center; font-size:1.3rem; flex-shrink:0; }
+    .svc-card-name { font-size:.95rem; font-weight:700; }
+    .svc-card-body { padding:1.25rem; flex:1; display:flex; flex-direction:column; justify-content:space-between; }
+    .svc-card-role { font-size:.85rem; color:var(--muted); line-height:1.5; margin-bottom:1.25rem; }
+    .svc-card-foot { display:flex; align-items:center; justify-content:space-between; }
+  </style>
+</head>
+<body>
+
+<nav id="p2s-nav"></nav>
+
+<div class="page-header">
+  <div class="container">
+    <h1 id="page-title">📂 Verified Services Directory</h1>
+    <p id="page-sub">Curated public authorities, emergency services, and tenant/consumer protection organizations.</p>
+  </div>
+</div>
+
+<div class="section-sm">
+  <div class="container">
+
+    <div class="toolbar">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="input" id="search" placeholder="Search services (e.g. Mieterverein, LEA, 116 117, Stromnetz)..." oninput="renderServices()"/>
+      </div>
+      <span class="services-count" id="svc-count"></span>
+    </div>
+
+    <div class="filter-btns" id="filters">
+      <!-- Populated dynamically based on language -->
+    </div>
+
+    <div class="svc-grid" id="svc-grid">
+      <div class="empty-state"><div class="spinner"></div></div>
+    </div>
+
+  </div>
+</div>
+
+<footer id="p2s-footer"></footer>
+<div id="toast"></div>
+<script src="/static/nav.js"></script>
+<script>
+let allServices = [];
+let activeFilter = 'All';
+
+const DOMAIN_I18N = {
+  en: {
+    'All': 'All Domains',
+    'Facility & Building Emergencies': '🏢 Facility & Building',
+    'Tenancy & Housing Law': '🏠 Tenancy & Housing',
+    'Health & Medical Care': '🏥 Health & Medical',
+    'Bureaucracy & Immigration': '🏛️ Bureaucracy (LEA / 115)',
+    'Utilities & Energy Crises': '⚡ Utilities & Grid',
+    'Consumer Protection & Contracts': '🛡️ Consumer Rights',
+    'IT, Telecom & Connectivity': '💻 IT & Telecom',
+    'Home Appliances & Craftspeople': '🔧 Craftspeople & Repairs'
+  },
+  de: {
+    'All': 'Alle Bereiche',
+    'Facility & Building Emergencies': '🏢 Gebäude & Havariedienst',
+    'Tenancy & Housing Law': '🏠 Mietrecht & Wohnen',
+    'Health & Medical Care': '🏥 Gesundheit & Notdienst',
+    'Bureaucracy & Immigration': '🏛️ Behörden (LEA / 115)',
+    'Utilities & Energy Crises': '⚡ Energie & Netze',
+    'Consumer Protection & Contracts': '🛡️ Verbraucherschutz',
+    'IT, Telecom & Connectivity': '💻 IT & Internet',
+    'Home Appliances & Craftspeople': '🔧 Handwerk & Reparatur'
+  }
+};
+
+const domainIcons = {
+  'Facility & Building Emergencies': '🏢',
+  'Tenancy & Housing Law':           '🏠',
+  'Health & Medical Care':           '🏥',
+  'Bureaucracy & Immigration':       '🏛️',
+  'Utilities & Energy Crises':       '⚡',
+  'Consumer Protection & Contracts': '🛡️',
+  'IT, Telecom & Connectivity':      '💻',
+  'Home Appliances & Craftspeople':  '🔧'
+};
+
+function updatePageLanguage(lang) {
+  const isDe = (lang === 'de');
+  document.getElementById('page-title').textContent = isDe ? '📂 Verzeichnis verifizierter Dienste' : '📂 Verified Services Directory';
+  document.getElementById('page-sub').textContent = isDe 
+    ? 'Kuratiertes Verzeichnis offizieller Berliner Behörden, Notdienste und Mieter-/Verbraucherschutzstellen.'
+    : 'Curated public authorities, emergency services, and tenant/consumer protection organizations.';
+  document.getElementById('search').placeholder = isDe
+    ? 'Dienste durchsuchen (z.B. Mieterverein, LEA, 116 117, Stromnetz)...'
+    : 'Search services (e.g. Mieterverein, LEA, 116 117, Stromnetz)...';
+  
+  renderFilters();
+  renderServices();
+}
+
+function renderFilters() {
+  const map = DOMAIN_I18N[currentLang] || DOMAIN_I18N.en;
+  const container = document.getElementById('filters');
+  container.innerHTML = Object.entries(map).map(([key, label]) => `
+    <button class="filter-btn ${activeFilter===key?'active':''}" data-domain="${key}" onclick="setFilter(this, '${key}')">${label}</button>
+  `).join('');
+}
+
+function setFilter(btn, domainKey) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeFilter = domainKey;
+  renderServices();
+}
+
+fetch('/api/services').then(r=>r.json()).then(data => {
+  allServices = [];
+  for (const [domain, svcs] of Object.entries(data.services)) {
+    svcs.forEach(s => {
+      allServices.push({
+        ...s,
+        domain,
+        icon: domainIcons[domain] || '📂'
+      });
+    });
+  }
+  renderFilters();
+  renderServices();
+}).catch(() => {
+  document.getElementById('svc-grid').innerHTML = '<p style="color:var(--danger)">Failed to load services database.</p>';
+});
+
+function renderServices() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const isDe = (currentLang === 'de');
+
+  let filtered = allServices.filter(s => {
+    const matchDomain = (activeFilter === 'All' || s.domain === activeFilter);
+    const matchQ = !q || s.name.toLowerCase().includes(q) || s.role.toLowerCase().includes(q) || s.domain.toLowerCase().includes(q);
+    return matchDomain && matchQ;
+  });
+
+  const countText = isDe 
+    ? `${filtered.length} verifizierte Stelle${filtered.length!==1?'n':''}`
+    : `${filtered.length} verified service${filtered.length!==1?'s':''}`;
+  document.getElementById('svc-count').textContent = countText;
+
+  if (!filtered.length) {
+    document.getElementById('svc-grid').innerHTML = `
+      <div class="empty-state" style="grid-column:1/-1">
+        <div class="empty-icon">🔍</div>
+        <h3>${isDe ? 'Keine Dienste gefunden' : 'No services found'}</h3>
+        <p>${isDe ? 'Versuchen Sie einen anderen Suchbegriff oder Filter.' : 'Try a different search term or category filter.'}</p>
+      </div>`;
+    return;
+  }
+
+  document.getElementById('svc-grid').innerHTML = filtered.map(s => {
+    const costTag = s.is_free
+      ? `<span class="tag tag-success">${isDe ? 'Kostenlos' : 'Free'}</span>`
+      : `<span class="tag tag-neutral">${isDe ? 'Kostenpflichtig' : 'Paid'}</span>`;
+
+    const buttonLabel = s.official_link?.startsWith('tel:') 
+      ? (isDe ? 'Notruf anrufen' : 'Call Hotline')
+      : (isDe ? 'Portal öffnen →' : 'Visit Portal →');
+
+    return `
+      <div class="svc-card">
+        <div class="svc-card-top">
+          <div class="svc-card-icon">${s.icon}</div>
+          <div>
+            <div class="svc-card-name">${s.name}</div>
+            <div style="margin-top:4px;">${domainTag(s.domain)}</div>
+          </div>
+        </div>
+        <div class="svc-card-body">
+          <div class="svc-card-role">${s.role}</div>
+          <div class="svc-card-foot">
+            ${costTag}
+            ${s.official_link?.startsWith('http') || s.official_link?.startsWith('tel:') 
+              ? `<a href="${s.official_link}" target="_blank" class="btn btn-sm btn-secondary">${buttonLabel}</a>`
+              : `<span class="btn btn-sm btn-ghost" style="cursor:default;font-size:0.75rem;">${s.official_link}</span>`}
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+</script>
+</body>
+</html>

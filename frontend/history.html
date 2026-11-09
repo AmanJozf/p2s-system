@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>P2S — History</title>
+  <link rel="stylesheet" href="/static/styles.css"/>
+  <style>
+    .page-header { background:#fff; border-bottom:1px solid var(--border); padding:2rem 0; }
+    .page-header h1 { font-size:1.6rem; font-weight:800; }
+    .page-header p { color:var(--muted); font-size:.9rem; margin-top:.3rem; }
+
+    .toolbar { display:flex; gap:1rem; align-items:center; margin:1.75rem 0 1.25rem; flex-wrap:wrap; }
+    .hist-grid { display:flex; flex-direction:column; gap:1rem; }
+
+    .hist-card {
+      background:#fff; border:1px solid var(--border); border-radius:var(--radius);
+      overflow:hidden; transition:border-color .2s;
+    }
+    .hist-card:hover { border-color:var(--brand); }
+
+    .hist-card-head {
+      display:flex; align-items:center; gap:14px; padding:1.1rem 1.25rem;
+      cursor:pointer; user-select:none;
+    }
+    .hist-icon { width:40px; height:40px; border-radius:10px; background:var(--brand-light); display:grid; place-items:center; font-size:1.1rem; flex-shrink:0; }
+    .hist-issue { font-size:.9rem; font-weight:600; flex:1; }
+    .hist-meta { font-size:.75rem; color:var(--muted); margin-top:3px; }
+    .hist-chevron { color:var(--muted); transition:transform .2s; }
+    .hist-card.open .hist-chevron { transform:rotate(180deg); }
+
+    .hist-body {
+      border-top:1px solid var(--border); padding:1.25rem;
+      display:none; background:var(--bg);
+    }
+    .hist-card.open .hist-body { display:block; }
+
+    .hist-checklist { margin-bottom:1rem; }
+    .hist-step { display:flex; gap:10px; align-items:flex-start; margin-bottom:8px; }
+    .hist-step-num { width:22px; height:22px; background:var(--brand); border-radius:50%; display:grid; place-items:center; color:#fff; font-size:.65rem; font-weight:800; flex-shrink:0; margin-top:1px; }
+    .hist-step p { font-size:.83rem; color:var(--text-2); line-height:1.5; }
+
+    .hist-foot { display:flex; gap:.75rem; align-items:center; margin-top:1rem; flex-wrap:wrap; }
+  </style>
+</head>
+<body>
+
+<nav id="p2s-nav"></nav>
+
+<div class="page-header">
+  <div class="container">
+    <h1>📜 Session History</h1>
+    <p>Your saved triage results from this browser session.</p>
+  </div>
+</div>
+
+<div class="section-sm">
+  <div class="container">
+    <div class="toolbar">
+      <span id="hist-count" style="font-size:.85rem;color:var(--muted);"></span>
+      <div style="flex:1;"></div>
+      <button class="btn btn-sm btn-ghost" onclick="clearHistory()">🗑 Clear All</button>
+      <a href="/triage" class="btn btn-sm btn-primary">+ New Triage</a>
+    </div>
+
+    <div class="hist-grid" id="hist-grid">
+      <div class="empty-state">
+        <div class="spinner"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer id="p2s-footer"></footer>
+<div id="toast"></div>
+<script src="/static/nav.js"></script>
+<script>
+const domainIcons = { Housing:'🏠', IT:'💻', Appliances:'⚙️', Other:'📋' };
+
+function loadHistory() {
+  const hist = JSON.parse(localStorage.getItem('p2s_history') || '[]');
+  const grid = document.getElementById('hist-grid');
+  document.getElementById('hist-count').textContent = `${hist.length} saved result${hist.length!==1?'s':''}`;
+
+  if (!hist.length) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <h3>No history yet</h3>
+        <p>Complete a triage and click "Save Result" to see it here.</p>
+        <a href="/triage" class="btn btn-primary" style="margin-top:1rem;">🔍 Start a Triage</a>
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = hist.map((item, idx) => `
+    <div class="hist-card" id="hc-${idx}">
+      <div class="hist-card-head" onclick="toggleCard(${idx})">
+        <div class="hist-icon">${domainIcons[item.domain]||'📋'}</div>
+        <div style="flex:1;">
+          <div class="hist-issue">${item.specific_issue}</div>
+          <div class="hist-meta">
+            ${domainTag(item.domain)} ${urgencyTag(item.urgency)}
+            &nbsp;·&nbsp; ${fmtTime(item.savedAt)}
+          </div>
+        </div>
+        <span class="hist-chevron">▼</span>
+      </div>
+      <div class="hist-body">
+        <div style="font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin-bottom:10px;">📋 Action Plan</div>
+        <div class="hist-checklist">
+          ${(item.action_checklist||[]).map((s,i)=>`
+            <div class="hist-step">
+              <div class="hist-step-num">${i+1}</div>
+              <p>${s.replace(/^Step \d+:\s*/i,'')}</p>
+            </div>`).join('')}
+        </div>
+        <div style="font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin-bottom:10px;">🔗 Services</div>
+        ${(item.recommended_services||[]).map(s=>`
+          <div style="font-size:.83rem;padding:6px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+            <span>${s.name}</span>
+            <span class="tag ${s.is_free?'tag-success':'tag-neutral'}">${s.is_free?'Free':'Paid'}</span>
+          </div>`).join('')}
+        <div class="hist-foot">
+          <button class="btn btn-sm btn-ghost" onclick="deleteItem(${idx})">🗑 Delete</button>
+          <a href="/triage" class="btn btn-sm btn-primary">↩ Run Similar</a>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function toggleCard(idx) {
+  document.getElementById('hc-'+idx).classList.toggle('open');
+}
+
+function deleteItem(idx) {
+  const hist = JSON.parse(localStorage.getItem('p2s_history')||'[]');
+  hist.splice(idx,1);
+  localStorage.setItem('p2s_history',JSON.stringify(hist));
+  showToast('Deleted.');
+  loadHistory();
+}
+
+function clearHistory() {
+  if (!confirm('Clear all saved history?')) return;
+  localStorage.removeItem('p2s_history');
+  showToast('History cleared.');
+  loadHistory();
+}
+
+loadHistory();
+</script>
+</body>
+</html>

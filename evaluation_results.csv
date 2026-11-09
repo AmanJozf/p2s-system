@@ -1,0 +1,22 @@
+test_id,input,expected_domain,predicted_domain,domain_match,expected_emergency,predicted_emergency,confidence_score,urgency,services_count,latency_seconds
+TC-01,My Hausmeister is not responding and I need to open the electrical room because the main fuse tripped.,Facility & Building Emergencies,Facility & Building Emergencies,True,False,False,97,High,3,2.26
+TC-02,Water is leaking through my bathroom ceiling from the apartment upstairs and the neighbor is not home.,Facility & Building Emergencies,Facility & Building Emergencies,True,False,False,97,High,3,1.22
+TC-03,The main building entrance door lock is jammed and multiple tenants are locked out on the street at midnight.,Facility & Building Emergencies,Facility & Building Emergencies,True,False,False,97,High,3,1.01
+TC-04,"I moved out 8 months ago, did a flawless handover, but my landlord still refuses to return my 1800 Euro Kaution deposit.",Tenancy & Housing Law,Tenancy & Housing Law,True,False,False,97,Medium,3,1.3
+TC-05,There is black mold spreading across my bedroom wall and the landlord claims it is my fault for not airing out properly.,Tenancy & Housing Law,Tenancy & Housing Law,True,False,False,95,Medium,3,1.2
+TC-06,My landlord sent a letter increasing my net cold rent by 25 percent within 1 year.,Tenancy & Housing Law,Tenancy & Housing Law,True,False,False,96,High,3,1.35
+TC-07,"It is Sunday afternoon, general doctors are closed, and I have a 39.5 C fever and severe ear pain. Who can I call?",Health & Medical Care,Health & Medical Care,True,False,False,98,High,3,1.61
+TC-08,I need urgent prescription medication for asthma at 2 AM on a public holiday in Berlin. Where is the nearest open pharmacy?,Health & Medical Care,Health & Medical Care,True,False,False,96,High,3,1.29
+TC-09,My student residence permit expires in 10 days and there are zero open appointments on the LEA Berlin booking portal.,Bureaucracy & Immigration,Bureaucracy & Immigration,True,False,False,97,High,3,1.46
+TC-10,"Just moved into a new WG room in Berlin, but the landlord refuses to sign the Wohnungsgeberbestaetigung for my Buergeramt Anmeldung.",Bureaucracy & Immigration,Bureaucracy & Immigration,True,False,False,96,High,3,1.56
+TC-11,Sudden power blackout across our entire street in Berlin. Streetlights and neighboring buildings are also dark.,Utilities & Energy Crises,Utilities & Energy Crises,True,False,False,97,High,3,1.63
+TC-12,Brown muddy water is coming out of all the taps in our kitchen and bathroom since this morning.,Utilities & Energy Crises,Facility & Building Emergencies,False,False,False,97,High,3,1.32
+TC-13,"Signed up for a trial gym membership, cancelled it in writing, but they are still deducting 65 euros every month from my bank via SEPA.",Consumer Protection & Contracts,Consumer Protection & Contracts,True,False,False,96,Medium,3,1.06
+TC-14,Received a threatening letter from an Inkasso debt collection agency demanding 420 euros for an order I never placed.,Consumer Protection & Contracts,ERROR,False,False,False,0,ERROR,0,0.19
+TC-15,"Paying for 250 Mbps DSL, but my speed tests consistently show only 12 Mbps and frequent disconnects during my remote study exams.","IT, Telecom & Connectivity",ERROR,False,False,False,0,ERROR,0,0.24
+TC-16,Router red light blinking for 48 hours. Internet provider hotline keeps putting me on hold for 45 minutes without resolving.,"IT, Telecom & Connectivity",ERROR,False,False,False,0,ERROR,0,0.21
+TC-17,Washing machine started leaking soap and water all over the kitchen floor during the spin cycle.,Home Appliances & Craftspeople,ERROR,False,False,False,0,ERROR,0,0.15
+TC-18,Need a certified electrician to connect a new induction stove safely to the 400V high-voltage socket.,Home Appliances & Craftspeople,ERROR,False,False,False,0,ERROR,0,0.18
+EM-01,I smell gas near the basement pipe and it is getting stronger.,Facility & Building Emergencies,Facility & Building Emergencies,True,True,True,99,CRITICAL_EMERGENCY,5,0.0
+EM-02,Electrical sparks and smoke pouring from the wall socket behind my desk.,Facility & Building Emergencies,Facility & Building Emergencies,True,True,True,99,CRITICAL_EMERGENCY,5,0.0
+EM-03,"My roommate collapsed, unconscious, and having severe difficulty breathing.",Health & Medical Care,Health & Medical Care,True,True,True,99,CRITICAL_EMERGENCY,5,0.0

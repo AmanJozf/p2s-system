@@ -1,0 +1,93 @@
+================================================================================
+P2S (Problem-to-Service) — Reference Citizen Problem Scenarios (Berlin Edition)
+================================================================================
+Use these realistic everyday problem descriptions to test the system, demo to
+professors, and validate your thesis benchmarking pipeline.
+
+--------------------------------------------------------------------------------
+DOMAIN 1: FACILITY & BUILDING EMERGENCIES (Hausverwaltung & Hausmeister)
+--------------------------------------------------------------------------------
+1.1  "My Hausmeister is not responding and I need to open the electrical room because the main fuse tripped."
+1.2  "Water is leaking through my bathroom ceiling from the apartment upstairs and the neighbor is not home."
+1.3  "The main building entrance door lock is jammed and 6 tenants are locked out on the street at midnight."
+1.4  "The passenger elevator in our building stopped between the 3rd and 4th floors with someone inside."
+1.5  "The central heating in our whole apartment complex stopped working in the middle of January."
+1.6  "The basement storage area is flooded with 10cm of dirty water after heavy rain in Berlin."
+
+--------------------------------------------------------------------------------
+DOMAIN 2: TENANCY & HOUSING LAW (Mietrecht & Berliner Mieterverein)
+--------------------------------------------------------------------------------
+2.1  "I moved out 8 months ago, did a flawless handover protocol (Übergabeprotokoll), but my landlord still refuses to return my €1,800 Kaution deposit."
+2.2  "There is black mold spreading across my bedroom wall and the landlord claims it's my fault for not airing out the room properly (Stoßlüften)."
+2.3  "My landlord sent a letter increasing my net cold rent (Kaltmiete) by 25% within 1 year. Isn't this violating the Berlin Mietpreisbremse?"
+2.4  "Received an immediate termination letter (Fristlose Kündigung) claiming Eigenbedarf (personal use) for the landlord's distant cousin."
+2.5  "The landlord entered my rented apartment with their spare key while I was at university without my permission."
+2.6  "Our building has had no warm water for 3 weeks and the landlord ignores my emails. How do I legally declare Mietminderung?"
+
+--------------------------------------------------------------------------------
+DOMAIN 3: HEALTH & MEDICAL CARE (116 117, Notruf & Bereitschaftsdienst)
+--------------------------------------------------------------------------------
+3.1  "It's Sunday afternoon, all general doctors (Hausärzte) are closed, and I have a 39.5°C fever and severe ear pain. Who can I call?"
+3.2  "I need urgent prescription medication for my asthma at 2 AM on a holiday in Berlin. Where is the nearest open pharmacy?"
+3.3  "A close friend is going through an acute psychological breakdown, panic attacks, and severe distress in Neukölln."
+3.4  "Sprained my ankle badly playing sports in Tiergarten. It's swollen and bruised, but I don't know if I need an ambulance or just an X-ray clinic."
+
+--------------------------------------------------------------------------------
+DOMAIN 4: BUREAUCRACY & IMMIGRATION (Bürgeramt 115, LEA Berlin & Visa)
+--------------------------------------------------------------------------------
+4.1  "My student residence permit (Aufenthaltstitel) expires in 10 days and there are zero open appointments on the LEA Berlin booking portal."
+4.2  "Just moved into a new WG room in Berlin, but the landlord refuses to sign the Wohnungsgeberbestätigung for my Bürgeramt Anmeldung."
+4.3  "I have been waiting 4 months for my tax ID (Steuer-Identifikationsnummer) from the Finanzamt and my employer is taxing me at Tax Class 6."
+4.4  "Graduated from my master's degree and need to transition from student visa § 16b to the 18-month job seeker visa § 20."
+4.5  "International student whose blocked account (Sperrkonto) monthly release got frozen due to an administrative document mismatch."
+
+--------------------------------------------------------------------------------
+DOMAIN 5: UTILITIES & ENERGY CRISES (Stromnetz Berlin, Wasserbetriebe & Gas)
+--------------------------------------------------------------------------------
+5.1  "Sudden power blackout across our entire street in Friedrichshain. Streetlights and neighboring buildings are also dark."
+5.2  "I smell a strong sulfur/gas odor coming from the basement pipe near the bike cellar." (EMERGENCY)
+5.3  "Brown muddy water is coming out of all the taps in our kitchen and bathroom since this morning."
+5.4  "Energy supplier sent an annual reconciliation bill (Nachzahlung) demanding €2,400 for a 1-room apartment due to an estimated meter reading error."
+5.5  "Gas heating company threatens to cut off the apartment gas supply next Monday over a disputed invoice."
+
+--------------------------------------------------------------------------------
+DOMAIN 6: CONSUMER PROTECTION & CONTRACTS (Verbraucherzentrale Berlin)
+--------------------------------------------------------------------------------
+6.1  "Signed up for a 1-month trial gym membership, cancelled it in writing, but they are still deducting €65 every month from my bank via SEPA."
+6.2  "Received a threatening letter from an Inkasso debt collection agency demanding €420 for an online order I never placed or received."
+6.3  "Ordered a laptop online from a German webshop 4 weeks ago, money was debited immediately, but customer service has ghosted me."
+6.4  "A mobile phone contract agent tricked me on the street into signing a second SIM card contract that I never agreed to."
+6.5  "Airline cancelled my flight from Berlin Brandenburg (BER) with 2 hours' notice due to operational reasons and refuses the EU261 compensation."
+
+--------------------------------------------------------------------------------
+DOMAIN 7: IT, TELECOM & CONNECTIVITY (Bundesnetzagentur & Internet)
+--------------------------------------------------------------------------------
+7.1  "Paying for 250 Mbps DSL, but my speed tests consistently show only 12 Mbps and frequent disconnects during my remote study exams."
+7.2  "Router red light blinking for 48 hours. Internet provider's hotline keeps putting me on hold for 45 minutes without resolving."
+7.3  "My laptop screen shattered and won't display anything. I need an affordable, honest repair workshop in Berlin before my thesis deadline."
+7.4  "Moving to a new apartment in Berlin, but the internet provider claims a 3-month waiting period to transfer my existing line."
+
+--------------------------------------------------------------------------------
+DOMAIN 8: HOME APPLIANCES & CRAFTSPEOPLE (Handwerkskammer & Handwerker)
+--------------------------------------------------------------------------------
+8.1  "Washing machine started leaking soap and water all over the kitchen floor during the spin cycle."
+8.2  "The built-in oven tripped the kitchen fuse with a loud pop and smells of burnt plastic."
+8.3  "Need a certified electrician (Elektroniker) to connect a new induction stove safely to the 400V high-voltage socket."
+8.4  "Refrigerator stopped cooling overnight, food is spoiling, and the compressor is making a clicking sound every few minutes."
+
+--------------------------------------------------------------------------------
+TRICKY / AMBIGUOUS PROBLEMS (To test Clarification Engine):
+--------------------------------------------------------------------------------
+T.1  "Everything in my flat is broken." -> Engine must ask for specific issue.
+T.2  "I have a big problem with my contract." -> Engine must clarify whether it's Tenancy, Telecom, Gym, or Employment.
+T.3  "I need help with my official paperwork." -> Engine must clarify whether it's LEA visa, Bürgeramt Anmeldung, or Tax.
+T.4  "The power is off." -> Engine must clarify if it's an internal fuse box trip or a street-wide grid outage.
+
+--------------------------------------------------------------------------------
+CRITICAL SAFETY EMERGENCIES (To test Immediate Guardrails):
+--------------------------------------------------------------------------------
+E.1  "I smell gas in the hallway and it's getting stronger." -> Immediate 112 / 030 7872 72
+E.2  "Electrical sparks and smoke coming from the wall socket behind my desk." -> Immediate 112
+E.3  "My roommate collapsed and is having severe difficulty breathing." -> Immediate 112
+E.4  "Ex-partner is threatening me and banging aggressively on my front door." -> Immediate 110
+================================================================================

@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>P2S — Triage Tool</title>
+  <link rel="stylesheet" href="/static/styles.css"/>
+  <style>
+    .triage-wrap { max-width:740px; margin:0 auto; padding:2.5rem 1rem 5rem; }
+
+    /* Progress */
+    .progress-bar { display:flex; align-items:center; justify-content:center; gap:0; margin-bottom:2.5rem; }
+    .pb-step { display:flex; flex-direction:column; align-items:center; gap:6px; flex:1; position:relative; }
+    .pb-step:not(:last-child)::after {
+      content:''; position:absolute; top:15px; left:50%; width:100%; height:2px;
+      background:var(--border); transition:background .4s; z-index:0;
+    }
+    .pb-step.done:not(:last-child)::after { background:var(--brand); }
+    .pb-num {
+      width:30px; height:30px; border-radius:50%; border:2px solid var(--border);
+      background:#fff; display:grid; place-items:center; font-size:.75rem; font-weight:800;
+      color:var(--muted); transition:all .3s; position:relative; z-index:1;
+    }
+    .pb-step.active .pb-num { border-color:var(--brand); background:var(--brand); color:#fff; }
+    .pb-step.done   .pb-num { border-color:var(--brand); background:var(--brand); color:#fff; }
+    .pb-label { font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); }
+    .pb-step.active .pb-label, .pb-step.done .pb-label { color:var(--brand); }
+
+    /* Emergency Alert Banner */
+    .emergency-banner {
+      background: #FEE2E2;
+      border: 2px solid #EF4444;
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      animation: pulse-border 2s infinite;
+    }
+    @keyframes pulse-border {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+      50% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+    }
+    .emergency-banner h3 { color: #991B1B; font-size: 1.05rem; font-weight: 800; }
+    .emergency-banner p { color: #7F1D1D; font-size: 0.9rem; margin-top: 4px; line-height: 1.45; }
+
+    /* Chips */
+    .example-chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+    .chip {
+      font-size:.78rem; padding:6px 14px; border-radius:99px;
+      border:1.5px solid var(--border); background:#fff; color:var(--muted);
+      cursor:pointer; transition:all .2s; white-space:nowrap;
+    }
+    .chip:hover { border-color:var(--brand); color:var(--brand); background:var(--brand-light); }
+
+    /* Question options */
+    .option-btn {
+      display:block; width:100%; padding:14px 16px;
+      border:2px solid var(--border); border-radius:10px; background:#fff;
+      font-size:.93rem; text-align:left; cursor:pointer; transition:all .15s;
+      font-family:inherit; color:var(--text); font-weight:500; margin-bottom:10px;
+    }
+    .option-btn:hover { border-color:var(--brand); background:var(--brand-light); color:var(--brand); }
+    .option-btn.selected { border-color:var(--brand); background:var(--brand); color:#fff; }
+
+    /* Checklist */
+    .checklist-item {
+      display:flex; gap:14px; align-items:flex-start;
+      padding:14px 16px; border-radius:10px; border:1px solid var(--border);
+      background:var(--bg); margin-bottom:10px; transition:border-color .15s;
+    }
+    .checklist-item:hover { border-color:var(--brand); }
+    .check-num {
+      width:28px; height:28px; background:var(--brand); border-radius:50%;
+      display:grid; place-items:center; color:#fff; font-size:.72rem;
+      font-weight:800; flex-shrink:0; margin-top:1px;
+    }
+    .checklist-item p { font-size:.93rem; line-height:1.55; }
+
+    /* Service cards */
+    .service-link {
+      display:flex; align-items:center; gap:14px; padding:14px 16px;
+      border-radius:10px; border:1px solid var(--border); background:#fff;
+      text-decoration:none; transition:all .2s; margin-bottom:10px;
+    }
+    .service-link:hover { border-color:var(--brand); box-shadow:var(--shadow); transform:translateY(-1px); }
+    .svc-logo { width:40px; height:40px; border-radius:9px; background:var(--brand-light); display:grid; place-items:center; font-size:1.1rem; flex-shrink:0; }
+    .svc-name { font-size:.92rem; font-weight:700; color:var(--text); }
+    .svc-role { font-size:.78rem; color:var(--muted); margin-top:2px; line-height:1.4; }
+    .svc-free { font-size:.68rem; font-weight:700; padding:3px 9px; border-radius:99px; margin-left:auto; flex-shrink:0; }
+
+    .loading-box { display:flex; flex-direction:column; align-items:center; gap:1rem; padding:4rem 2rem; text-align:center; }
+    .result-header-row { display:flex; align-items:flex-start; gap:1rem; margin-bottom:1.75rem; }
+    .result-icon-box { width:52px; height:52px; background:var(--success-bg); border-radius:12px; display:grid; place-items:center; font-size:1.5rem; flex-shrink:0; }
+    .result-title { font-size:1.05rem; font-weight:700; line-height:1.4; }
+    .result-tags { display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; }
+    .section-hdr { font-size:.7rem; font-weight:800; text-transform:uppercase; letter-spacing:.8px; color:var(--muted); margin-bottom:12px; }
+
+    /* Voice dictation button */
+    .input-actions-bar { display:flex; align-items:center; justify-content:space-between; margin-top:10px; }
+    .voice-btn {
+      display:inline-flex; align-items:center; gap:6px; padding:7px 14px;
+      background:var(--bg-2); border:1.5px solid var(--border); border-radius:8px;
+      font-size:.8rem; font-weight:600; cursor:pointer; color:var(--muted); transition:all .2s;
+    }
+    .voice-btn:hover { border-color:var(--brand); color:var(--brand); }
+    .voice-btn.recording { background:#FEE2E2; border-color:#EF4444; color:#DC2626; animation:pulse-border 1.5s infinite; }
+
+    /* Printable Action Plan Styles */
+    @media print {
+      body { background: #fff !important; color: #000 !important; }
+      #p2s-nav, #p2s-footer, .progress-bar, .example-chips, #submit-btn, .input-actions-bar,
+      .filter-btns, .toolbar, button, #toast { display: none !important; }
+      .triage-wrap { max-width: 100% !important; padding: 0 !important; }
+      .card { border: none !important; box-shadow: none !important; }
+      .print-header { display: block !important; margin-bottom: 2rem; border-bottom: 2px solid #000; padding-bottom: 1rem; }
+      .checklist-item { background: #fff !important; border: 1px solid #ccc !important; page-break-inside: avoid; }
+    }
+    .print-header { display: none; }
+  </style>
+</head>
+<body>
+
+<nav id="p2s-nav"></nav>
+
+<div class="triage-wrap">
+
+  <!-- Printable Header (Visible only when printing/exporting to PDF) -->
+  <div class="print-header" id="print-header">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <h1 style="font-size:1.4rem;font-weight:900;">P2S — Official Action Plan & Service Referral</h1>
+        <p style="font-size:0.85rem;color:#555;">Citizen & Tenant Triage Protocol · Validated Legal Procedure</p>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-weight:700;font-size:0.85rem;" id="print-ref">REF: P2S-BER-0000</div>
+        <div style="font-size:0.75rem;color:#555;" id="print-date"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-bar" id="progress-bar">
+    <div class="pb-step active" id="pb-1"><div class="pb-num">1</div><div class="pb-label" id="step-lbl-1">Describe</div></div>
+    <div class="pb-step"        id="pb-2"><div class="pb-num">2</div><div class="pb-label" id="step-lbl-2">Clarify</div></div>
+    <div class="pb-step"        id="pb-3"><div class="pb-num">3</div><div class="pb-label" id="step-lbl-3">Resolved</div></div>
+  </div>
+
+  <div class="card">
+
+    <!-- PHASE: Input -->
+    <div id="ph-input" class="card-body">
+      <h2 id="ui-title" style="font-size:1.25rem;font-weight:800;margin-bottom:.3rem;">What's your problem?</h2>
+      <p id="ui-subtitle" style="font-size:.85rem;color:var(--muted);margin-bottom:1.25rem;">Describe what happened in plain German or English — no legal jargon required.</p>
+
+      <label class="label" for="prob-input" id="ui-lbl-situation">Describe your situation</label>
+      <textarea id="prob-input" class="input" rows="5" style="resize:vertical;min-height:130px;padding:1rem;"
+        placeholder="e.g. My Hausmeister isn't answering and the fuse tripped in the locked electrical room... OR My landlord kept my Kaution after 8 months..."></textarea>
+
+      <div class="input-actions-bar">
+        <button class="voice-btn" id="voice-btn" onclick="toggleVoice()">
+          <span id="voice-icon">🎙️</span> <span id="voice-text">Voice Dictation</span>
+        </button>
+        <span style="font-size:.75rem;color:var(--muted);" id="ui-hint">Ctrl+Enter to submit</span>
+      </div>
+
+      <div style="margin-top:14px;">
+        <button type="button" onclick="toggleChipsDrawer()" style="background:transparent;border:none;color:var(--brand);font-size:0.8rem;font-weight:700;cursor:pointer;padding:0;display:inline-flex;align-items:center;gap:4px;">
+          <span id="chips-toggle-icon">▶</span> <span id="chips-toggle-text">Show sample problem scenarios (Reference bank)</span>
+        </button>
+        <div class="example-chips hidden" id="chips-container" style="margin-top:8px;">
+          <!-- Dynamically populated via nav.js based on current language -->
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-full btn-lg" style="margin-top:1.5rem;" onclick="submitProblem()" id="submit-btn">
+        🔍 Analyse & Route Problem
+      </button>
+    </div>
+
+    <!-- PHASE: Loading -->
+    <div id="ph-loading" class="hidden">
+      <div class="loading-box">
+        <div class="spinner"></div>
+        <div>
+          <strong id="ui-loading-title">Evaluating situation in Berlin...</strong>
+          <p id="ui-loading-sub">Checking legal context (§ BGB / Berlin ordinances) and matching verified emergency & advice services.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE: Question -->
+    <div id="ph-question" class="hidden">
+      <div style="background:var(--brand-light);padding:1.25rem 1.75rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;">
+        <div style="width:40px;height:40px;background:var(--brand);border-radius:10px;display:grid;place-items:center;color:#fff;font-size:1.1rem;flex-shrink:0;">🤔</div>
+        <div>
+          <div style="font-weight:700;" id="ui-q-title">One quick clarification</div>
+          <div style="font-size:.82rem;color:var(--muted);" id="ui-q-sub">This ensures we route you to the exact responsible office or helpline.</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p id="q-text" style="font-size:1rem;font-weight:600;line-height:1.55;margin-bottom:1.25rem;"></p>
+        <div id="q-options"></div>
+        <div id="q-free-box">
+          <label class="label" style="margin-top:.75rem;" id="ui-q-free-lbl">Or type your specific details:</label>
+          <textarea id="q-free" class="input" rows="3" style="resize:vertical;min-height:80px;padding:.8rem;margin-top:6px;"
+            placeholder="Type your answer here..."></textarea>
+        </div>
+        <button class="btn btn-primary btn-full btn-lg" style="margin-top:1.25rem;" onclick="submitAnswer()" id="ui-q-continue">→ Continue Triage</button>
+      </div>
+    </div>
+
+    <!-- PHASE: Result -->
+    <div id="ph-result" class="hidden card-body">
+
+      <!-- Dynamic Emergency Alert Box if safety hazard -->
+      <div id="r-emergency-box" class="emergency-banner hidden">
+        <div style="font-size:1.8rem;line-height:1;">🚨</div>
+        <div>
+          <h3 id="r-emergency-title">URGENT SAFETY HAZARD</h3>
+          <p id="r-emergency-desc"></p>
+        </div>
+      </div>
+
+      <div class="result-header-row">
+        <div class="result-icon-box" id="r-status-icon">✅</div>
+        <div>
+          <div class="result-title" id="r-issue"></div>
+          <div class="result-tags" id="r-tags"></div>
+        </div>
+      </div>
+
+      <div class="section-hdr" id="ui-r-action-plan-title">📋 Immediate Action Plan</div>
+      <div id="r-checklist"></div>
+
+      <div class="section-hdr" style="margin-top:1.75rem;" id="ui-r-services-title">🔗 Verified Services & Helplines</div>
+      <div id="r-services"></div>
+
+      <!-- Action Buttons Row -->
+      <div style="display:flex;gap:.75rem;margin-top:1.5rem;flex-wrap:wrap;">
+        <button class="btn btn-ghost" onclick="resetTriage()" style="flex:1;" id="ui-r-new-btn">↩ New Triage</button>
+        <button class="btn btn-secondary" onclick="saveToHistory()" style="flex:1;" id="ui-r-save-btn">💾 Save Action Plan</button>
+        <button class="btn btn-primary" onclick="exportToPDF()" style="flex:1.2;" id="ui-r-export-btn">📄 Export PDF / Print</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer id="p2s-footer"></footer>
+<div id="toast"></div>
+<script src="/static/nav.js"></script>
+<script>
+const API = '';
+let S = { sessionId:null, problem:null, question:null, answer:null, lastResult:null };
+
+function updatePageLanguage(lang) {
+  const t = I18N[lang] || I18N.en;
+  document.getElementById('ui-title').textContent = t.triage_title;
+  document.getElementById('ui-subtitle').textContent = t.triage_subtitle;
+  document.getElementById('ui-lbl-situation').textContent = t.situation_label;
+  document.getElementById('prob-input').placeholder = t.situation_placeholder;
+  document.getElementById('voice-text').textContent = t.voice_btn;
+  document.getElementById('submit-btn').textContent = t.analyse_btn;
+  document.getElementById('ui-hint').textContent = t.shortcut_hint;
+  document.getElementById('ui-q-title').textContent = t.quick_clarification;
+  document.getElementById('ui-q-sub').textContent = t.clarification_sub;
+  document.getElementById('ui-q-free-lbl').textContent = t.or_type_details;
+  document.getElementById('ui-q-continue').textContent = t.continue_btn;
+  document.getElementById('ui-r-action-plan-title').textContent = t.action_plan_title;
+  document.getElementById('ui-r-services-title').textContent = t.recommended_services_title;
+  document.getElementById('ui-r-new-btn').textContent = t.new_triage_btn;
+  document.getElementById('ui-r-save-btn').textContent = t.save_plan_btn;
+  document.getElementById('ui-r-export-btn').textContent = t.export_pdf_btn;
+  document.getElementById('r-emergency-title').textContent = t.emergency_title;
+
+  document.getElementById('step-lbl-1').textContent = lang==='de'?'Schildern':'Describe';
+  document.getElementById('step-lbl-2').textContent = lang==='de'?'Präzisieren':'Clarify';
+  document.getElementById('step-lbl-3').textContent = lang==='de'?'Gelöst':'Resolved';
+
+  // Render localized chips
+  const chipsContainer = document.getElementById('chips-container');
+  chipsContainer.innerHTML = t.chips.map(c => `<span class="chip" onclick="fill(this)">${c}</span>`).join('');
+}
+
+function fill(chip) {
+  document.getElementById('prob-input').value = chip.textContent.replace(/^[^\w]+/,'').trim();
+  document.getElementById('prob-input').focus();
+}
+
+function setStep(n) {
+  [1,2,3].forEach(i => {
+    const el = document.getElementById('pb-'+i);
+    el.classList.remove('active','done');
+    if (i < n) el.classList.add('done');
+    if (i === n) el.classList.add('active');
+  });
+}
+
+function show(id) {
+  ['ph-input','ph-loading','ph-question','ph-result'].forEach(x => document.getElementById(x).classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+}
+
+async function submitProblem() {
+  const prob = document.getElementById('prob-input').value.trim();
+  if (!prob) { document.getElementById('prob-input').focus(); return; }
+  S.problem = prob;
+  show('ph-loading'); setStep(2);
+  try {
+    const res = await fetch(`${API}/api/triage/start`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ problem_description: prob })
+    });
+    if (!res.ok) throw new Error(res.status);
+    handleResponse(await res.json());
+  } catch(e) {
+    showToast(currentLang==='de'?'❌ Verbindungsfehler. Läuft der Server?':'❌ Connection error. Is the server running?');
+    show('ph-input'); setStep(1);
+  }
+}
+
+function handleResponse(data) {
+  S.sessionId = data.session_id;
+  if (data.status === 'needs_clarification') {
+    S.question = data.follow_up_question;
+    document.getElementById('q-text').textContent = data.follow_up_question;
+    const opts = document.getElementById('q-options');
+    opts.innerHTML = '';
+    S.answer = null;
+    if (data.suggested_options?.length) {
+      data.suggested_options.forEach(o => {
+        const b = document.createElement('button');
+        b.className = 'option-btn'; b.textContent = o;
+        b.onclick = () => {
+          document.querySelectorAll('.option-btn').forEach(x=>x.classList.remove('selected'));
+          b.classList.add('selected');
+          S.answer = o;
+          document.getElementById('q-free').value = '';
+        };
+        opts.appendChild(b);
+      });
+    }
+    show('ph-question'); setStep(2);
+  } else {
+    renderResult(data);
+  }
+}
+
+async function submitAnswer() {
+  const free = document.getElementById('q-free').value.trim();
+  const ans = S.answer || free;
+  if (!ans) {
+    showToast(currentLang==='de'?'Bitte Option wählen oder Text eingeben.':'Please select or type an answer.');
+    return;
+  }
+  show('ph-loading');
+  try {
+    const res = await fetch(`${API}/api/triage/answer`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ session_id:S.sessionId, original_problem:S.problem, previous_question:S.question, user_answer:ans })
+    });
+    if (!res.ok) throw new Error(res.status);
+    renderResult(await res.json());
+  } catch(e) {
+    showToast('❌ Error. Please try again.'); show('ph-question');
+  }
+}
+
+function toggleChipsDrawer() {
+  const container = document.getElementById('chips-container');
+  const icon = document.getElementById('chips-toggle-icon');
+  const isHidden = container.classList.contains('hidden');
+  if (isHidden) {
+    container.classList.remove('hidden');
+    icon.textContent = '▼';
+  } else {
+    container.classList.add('hidden');
+    icon.textContent = '▶';
+  }
+}
+
+function renderResult(data) {
+  S.lastResult = data;
+  document.getElementById('r-issue').textContent = data.specific_issue;
+  
+  const confBadge = `<span class="tag" style="background:#E0E7FF;color:#3730A3;">🎯 ${data.confidence_score||94}% Match · ${data.matching_method||'Semantic Search'}</span>`;
+  document.getElementById('r-tags').innerHTML = domainTag(data.domain) + ' ' + urgencyTag(data.urgency) + ' ' + confBadge;
+
+  const emerBox = document.getElementById('r-emergency-box');
+  const statusIcon = document.getElementById('r-status-icon');
+
+  if (data.is_emergency) {
+    emerBox.classList.remove('hidden');
+    document.getElementById('r-emergency-desc').textContent = data.emergency_notice || "Immediate safety precaution required!";
+    statusIcon.textContent = '🚨';
+    statusIcon.style.background = '#FEE2E2';
+  } else {
+    emerBox.classList.add('hidden');
+    statusIcon.textContent = '✅';
+    statusIcon.style.background = 'var(--success-bg)';
+  }
+
+  const cl = document.getElementById('r-checklist');
+  cl.innerHTML = (data.action_checklist||[]).map((s,i)=>`
+    <div class="checklist-item">
+      <div class="check-num" style="${data.is_emergency?'background:#EF4444':''}">${i+1}</div>
+      <p>${s.replace(/^Step \d+:\s*/i,'')}</p>
+    </div>`).join('');
+
+  const sv = document.getElementById('r-services');
+  const icons=['🏛️','🏢','🏥','⚡','📞','💻','⚙️','🛡️'];
+  sv.innerHTML = (data.recommended_services||[]).map((s,i)=>`
+    <a class="service-link" href="${s.official_link?.startsWith('http')||s.official_link?.startsWith('tel:')?s.official_link:'#'}" target="_blank">
+      <div class="svc-logo">${icons[i%icons.length]}</div>
+      <div style="flex:1;">
+        <div class="svc-name">${s.name}</div>
+        <div class="svc-role">${s.role}</div>
+      </div>
+      <span class="svc-free tag ${s.is_free?'tag-success':'tag-neutral'}">${s.is_free?(currentLang==='de'?'Kostenlos':'Free'):(currentLang==='de'?'Gebühren':'Paid')}</span>
+    </a>`).join('');
+
+  show('ph-result'); setStep(3);
+  setTimeout(()=>document.querySelector('.card').scrollIntoView({behavior:'smooth',block:'start'}),100);
+}
+
+function saveToHistory() {
+  if (!S.lastResult) return;
+  const hist = JSON.parse(localStorage.getItem('p2s_history')||'[]');
+  hist.unshift({ ...S.lastResult, problem: S.problem, savedAt: new Date().toISOString() });
+  localStorage.setItem('p2s_history', JSON.stringify(hist.slice(0,50)));
+  showToast(currentLang==='de'?'✅ Im Verlauf gespeichert!':'✅ Saved to action history!');
+}
+
+function exportToPDF() {
+  if (!S.lastResult) return;
+  document.getElementById('print-ref').textContent = `CASE REF: P2S-${(S.sessionId||'BER').toUpperCase()}`;
+  document.getElementById('print-date').textContent = new Date().toLocaleString(currentLang==='de'?'de-DE':'en-GB');
+  window.print();
+}
+
+function resetTriage() {
+  S = { sessionId:null, problem:null, question:null, answer:null, lastResult:null };
+  document.getElementById('prob-input').value = '';
+  document.getElementById('q-free').value = '';
+  show('ph-input'); setStep(1);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* Voice Dictation (Speech-to-Text via Web Speech API) */
+let recognition = null;
+let isRecording = false;
+
+function toggleVoice() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    showToast('⚠️ Speech recognition not supported. Try Chrome/Edge.');
+    return;
+  }
+
+  const vBtn = document.getElementById('voice-btn');
+  const vText = document.getElementById('voice-text');
+
+  if (isRecording) {
+    if (recognition) recognition.stop();
+    isRecording = false;
+    vBtn.classList.remove('recording');
+    vText.textContent = I18N[currentLang].voice_btn;
+    return;
+  }
+
+  recognition = new SpeechRecognition();
+  recognition.lang = currentLang === 'de' ? 'de-DE' : 'en-US';
+  recognition.interimResults = true;
+  recognition.continuous = false;
+
+  recognition.onstart = () => {
+    isRecording = true;
+    vBtn.classList.add('recording');
+    vText.textContent = I18N[currentLang].voice_listening;
+  };
+
+  recognition.onresult = (event) => {
+    const transcript = Array.from(event.results).map(r => r[0].transcript).join('');
+    document.getElementById('prob-input').value = transcript;
+  };
+
+  recognition.onerror = (e) => {
+    console.error(e);
+    isRecording = false;
+    vBtn.classList.remove('recording');
+    vText.textContent = I18N[currentLang].voice_btn;
+    showToast('Mic error: ' + (e.error || 'Check access'));
+  };
+
+  recognition.onend = () => {
+    isRecording = false;
+    vBtn.classList.remove('recording');
+    vText.textContent = I18N[currentLang].voice_btn;
+  };
+
+  recognition.start();
+}
+
+document.getElementById('prob-input').addEventListener('keydown', e => {
+  if (e.key==='Enter' && e.ctrlKey) submitProblem();
+});
+</script>
+</body>
+</html>
