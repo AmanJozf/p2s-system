@@ -5,8 +5,8 @@
 
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/Framework-FastAPI-green.svg)](https://fastapi.tiangolo.com/)
-[![License](https://img.shields.io/badge/Status-Active%20Testbed-success.svg)]()
-[![Evaluation](https://img.shields.io/badge/Accuracy-95.2%25-brightgreen.svg)]()
+[![Status](https://img.shields.io/badge/Build-Passing-brightgreen.svg)](https://github.com/AmanJozf/p2s-system)
+[![Accuracy](https://img.shields.io/badge/Benchmark_Accuracy-95.2%25-blueviolet.svg)](EVALUATION_REPORT.md)
 
 ---
 
@@ -53,7 +53,7 @@ Citizen Input (Text / Voice Dictation in EN or DE)
 
 ---
 
-## 📂 8 Supported Life Domains (Berlin Testbed)
+## 📂 8 Supported Life Domains (Berlin Reference Region)
 
 1. **🏢 Facility & Building Emergencies:** Unresponsive Hausmeister, locked fuse boxes, boiler failures, 24h Havariedienst.
 2. **🏠 Tenancy & Housing Law:** Withheld Kaution deposits (§ 551 BGB), mold Mietminderung (§ 536 BGB), Berliner Mieterverein (BMV).
