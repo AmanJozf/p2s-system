@@ -8,7 +8,9 @@ __pycache__/
 venv/
 .venv/
 
-# SQLite databases
+# Private Cheat Sheets & Notes
+PROJECT_QNA.txt
+test_scenarios.txt
 *.db
 *.sqlite3
 
