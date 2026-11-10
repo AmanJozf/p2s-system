@@ -21,6 +21,7 @@ load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.2:3b")
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
+OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY", "")
 
 
 class LLMError(Exception):
@@ -80,9 +81,10 @@ class GeminiProvider:
 class OllamaProvider:
     name = "ollama"
 
-    def __init__(self, model: str = OLLAMA_MODEL, base_url: str = OLLAMA_URL, timeout: int = 180):
+    def __init__(self, model: str = OLLAMA_MODEL, base_url: str = OLLAMA_URL, api_key: str | None = None, timeout: int = 180):
         self.model = model
         self.base_url = base_url.rstrip("/")
+        self.api_key = api_key if api_key is not None else OLLAMA_API_KEY
         self.timeout = timeout
 
     @property
@@ -119,10 +121,14 @@ class OllamaProvider:
             "options": {"temperature": 0.2, "num_ctx": 4096},
             "keep_alive": "30m",
         }
+        headers = {"Content-Type": "application/json"}
+        if self.api_key:
+            headers["Authorization"] = f"Bearer {self.api_key}"
+
         req = urllib.request.Request(
             f"{self.base_url}/api/chat",
             data=json.dumps(payload).encode(),
-            headers={"Content-Type": "application/json"},
+            headers=headers,
         )
         try:
             with urllib.request.urlopen(req, timeout=self.timeout) as r:
