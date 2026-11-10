@@ -5,187 +5,176 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>P2S — Problem to Service</title>
   <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     * {
       box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
     body {
-      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
-      background-color: #07090e;
-      color: #f1f5f9;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
+      background-color: #f5f5f7;
+      color: #1d1d1f;
       min-height: 100vh;
       margin: 0;
-      overflow-x: hidden;
     }
-    .font-mono { font-family: 'JetBrains Mono', monospace; }
-
-    /* Ultra-clean subtle background grid & ambient light */
-    .ambient-glow {
-      position: fixed;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 900px;
-      height: 400px;
-      background: radial-gradient(ellipse at 50% 0%, rgba(99, 102, 241, 0.12) 0%, rgba(56, 189, 248, 0.04) 45%, transparent 70%);
-      pointer-events: none;
-      z-index: 0;
+    .font-mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     }
 
-    .subtle-grid {
-      position: fixed;
-      inset: 0;
-      background-image: linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-                        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-      background-size: 40px 40px;
-      pointer-events: none;
-      z-index: 0;
-      mask-image: radial-gradient(circle at 50% 30%, black 30%, transparent 80%);
-      -webkit-mask-image: radial-gradient(circle at 50% 30%, black 30%, transparent 80%);
+    /* Apple Precision Floating Card */
+    .apple-card {
+      background: #ffffff;
+      border: 1px solid #e5e5ea;
+      border-radius: 22px;
+      box-shadow: 0 4px 28px -4px rgba(0, 0, 0, 0.06), 0 2px 8px -2px rgba(0, 0, 0, 0.02);
+      transition: all 0.25s ease;
     }
 
-    /* Refined Obsidian Glass Card */
-    .pro-card {
-      background: #0d111a;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.03);
-      border-radius: 20px;
+    /* Apple Input Field */
+    .apple-textarea {
+      background: #ffffff;
+      border: 1px solid #d2d2d7;
+      border-radius: 14px;
+      color: #1d1d1f;
+      transition: border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .apple-textarea:focus {
+      outline: none;
+      border-color: #0071e3;
+      box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.14);
     }
 
-    /* Subtle Equalizer Soundwaves */
+    /* Apple Signature Pill Button */
+    .apple-btn-primary {
+      background-color: #0071e3;
+      color: #ffffff;
+      border-radius: 9999px;
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .apple-btn-primary:hover {
+      background-color: #0077ed;
+      transform: translateY(-0.5px);
+      box-shadow: 0 4px 12px rgba(0, 113, 227, 0.25);
+    }
+    .apple-btn-primary:active {
+      transform: scale(0.99);
+      background-color: #006edb;
+    }
+
+    /* Apple Scenario Pill */
+    .apple-pill {
+      background: #f5f5f7;
+      border: 1px solid #e5e5ea;
+      border-radius: 9999px;
+      color: #1d1d1f;
+      transition: all 0.15s ease;
+    }
+    .apple-pill:hover {
+      background: #e8e8ed;
+      border-color: #d2d2d7;
+      transform: translateY(-0.5px);
+    }
+
+    /* Subtle Equalizer Soundwave Bars */
     .wave-bar {
-      width: 2.5px;
-      background: #64748b;
-      border-radius: 4px;
+      width: 2px;
+      background: #86868b;
+      border-radius: 2px;
       transform-origin: bottom;
       transition: height 0.15s ease, background-color 0.2s ease;
     }
     .is-listening .wave-bar {
-      background: #38bdf8;
-      animation: wave 0.7s ease-in-out infinite alternate;
+      background: #0071e3;
+      animation: wave 0.75s ease-in-out infinite alternate;
     }
     .is-listening .wave-bar:nth-child(2) { animation-delay: 0.15s; }
-    .is-listening .wave-bar:nth-child(3) { animation-delay: 0.35s; }
+    .is-listening .wave-bar:nth-child(3) { animation-delay: 0.3s; }
     .is-listening .wave-bar:nth-child(4) { animation-delay: 0.2s; }
     .is-listening .wave-bar:nth-child(5) { animation-delay: 0.4s; }
     @keyframes wave {
-      0% { transform: scaleY(0.4); }
-      100% { transform: scaleY(1.4); }
-    }
-
-    /* Sleek Scenario Chip */
-    .scenario-pill {
-      background: rgba(18, 24, 38, 0.75);
-      border: 1px solid rgba(255, 255, 255, 0.07);
-      transition: all 0.18s ease;
-    }
-    .scenario-pill:hover {
-      background: rgba(30, 41, 59, 0.9);
-      border-color: rgba(99, 102, 241, 0.4);
-      color: #fff;
-      transform: translateY(-1px);
-    }
-
-    /* Clean Confident Button */
-    .action-btn {
-      background: #4f46e5;
-      box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.35);
-      transition: all 0.18s ease;
-    }
-    .action-btn:hover {
-      background: #4338ca;
-      box-shadow: 0 6px 20px 0 rgba(79, 70, 229, 0.45);
-      transform: translateY(-1px);
-    }
-    .action-btn:active {
-      transform: translateY(0);
+      0% { transform: scaleY(0.35); }
+      100% { transform: scaleY(1.35); }
     }
   </style>
 </head>
-<body class="flex flex-col items-center justify-between p-4 md:p-8 relative">
+<body class="flex flex-col items-center justify-between p-4 md:p-8">
 
-  <!-- Ambient Light & Subtle Grid -->
-  <div class="ambient-glow"></div>
-  <div class="subtle-grid"></div>
-
-  <!-- Top Navigation Bar -->
-  <header class="relative z-10 w-full max-w-3xl flex items-center justify-between py-3 px-5 mb-8 rounded-xl bg-slate-900/60 border border-white/5 backdrop-blur-md">
+  <!-- Top Glass Navigation Bar -->
+  <header class="w-full max-w-3xl flex items-center justify-between py-3 px-5 mb-8 rounded-2xl bg-white/80 border border-[#e5e5ea] backdrop-blur-xl shadow-sm">
     <div class="flex items-center gap-3">
-      <div class="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center font-bold text-white text-xs">
+      <div class="w-7 h-7 rounded-lg bg-[#1d1d1f] flex items-center justify-center font-bold text-white text-xs tracking-tight">
         P
       </div>
       <div>
-        <span class="text-sm font-bold text-white tracking-tight">P2S</span>
-        <span class="text-xs text-slate-400 ml-1.5 font-mono">Triage Engine</span>
+        <span class="text-sm font-bold text-[#1d1d1f] tracking-tight">P2S</span>
+        <span class="text-xs text-[#86868b] ml-1.5 font-medium">Problem to Service</span>
       </div>
     </div>
 
     <div class="flex items-center gap-3">
-      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono text-emerald-400 bg-emerald-950/40 border border-emerald-800/40">
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-        Live Local
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium text-[#1d1d1f] bg-[#f5f5f7] border border-[#e5e5ea]">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+        Berlin, DE
       </span>
-      <a href="/triage" class="text-xs text-slate-400 hover:text-white transition-colors font-mono">
-        Classic Mode →
+      <a href="/triage" class="text-xs text-[#86868b] hover:text-[#1d1d1f] transition-colors font-medium">
+        Classic Baseline →
       </a>
     </div>
   </header>
 
-  <!-- Main Card -->
-  <main class="w-full max-w-3xl relative z-10 my-auto pb-8">
-    <div class="pro-card p-6 md:p-9">
+  <!-- Main Apple Precision Card -->
+  <main class="w-full max-w-3xl my-auto pb-8">
+    <div class="apple-card p-6 md:p-10">
 
       <!-- Header with Hacker Scramble Title -->
-      <div class="flex items-start justify-between pb-6 border-b border-slate-800/80 mb-6">
+      <div class="flex items-start justify-between pb-6 border-b border-[#e5e5ea] mb-6">
         <div>
           <div class="flex items-center gap-2 mb-2">
-            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-medium uppercase tracking-wider bg-indigo-950/60 text-indigo-300 border border-indigo-800/40">
-              Civic Legal Triage
+            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold text-[#1d1d1f] bg-[#e8e8ed]">
+              Official Public Service
             </span>
-            <span class="px-2 py-0.5 rounded text-[10px] font-mono text-slate-400 bg-slate-900 border border-slate-800">
-              Berlin / Germany
+            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200">
+              100% Deterministic Safety
             </span>
           </div>
 
           <!-- THE DOPE SCRAMBLE TITLE -->
-          <h1 id="scrambleTitle" class="text-2xl md:text-3xl font-bold text-white tracking-tight cursor-pointer inline-block" onmouseenter="runScramble()">
+          <h1 id="scrambleTitle" class="text-2xl md:text-3xl font-bold text-[#1d1d1f] tracking-tight cursor-pointer inline-block" onmouseenter="runScramble()">
             PROBLEM TO SERVICE
           </h1>
-          <p class="text-xs md:text-sm text-slate-400 mt-1">
+          <p class="text-xs md:text-sm text-[#86868b] mt-1 font-normal">
             Describe what happened in plain German or English.
           </p>
         </div>
 
-        <button onclick="runScramble()" title="Re-trigger scramble animation" class="text-slate-500 hover:text-indigo-400 transition-colors p-2 text-xs font-mono flex items-center gap-1 cursor-pointer">
+        <button onclick="runScramble()" title="Re-trigger scramble animation" class="text-[#86868b] hover:text-[#0071e3] transition-colors p-2 text-xs font-medium flex items-center gap-1 cursor-pointer">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
           <span class="hidden sm:inline">Scramble</span>
         </button>
       </div>
 
-      <!-- Step Indicator -->
-      <div class="flex items-center justify-between gap-3 mb-7 px-1 text-xs">
-        <div id="step1Indicator" class="flex items-center gap-2 font-medium text-white">
-          <span class="w-5 h-5 rounded-full bg-indigo-600 text-white text-[11px] font-mono flex items-center justify-center font-bold">1</span>
-          <span>Describe</span>
+      <!-- Apple Stepper Progress -->
+      <div class="flex items-center justify-between gap-3 mb-7 px-1 text-xs font-medium">
+        <div id="step1Indicator" class="flex items-center gap-2 text-[#0071e3]">
+          <span class="w-5 h-5 rounded-full bg-[#0071e3] text-white text-[11px] flex items-center justify-center font-bold">1</span>
+          <span class="font-semibold">Describe</span>
         </div>
-        <div class="flex-1 h-px bg-slate-800 mx-2"></div>
-        <div id="step2Indicator" class="flex items-center gap-2 text-slate-500 font-medium">
-          <span class="w-5 h-5 rounded-full bg-slate-800 text-slate-400 text-[11px] font-mono flex items-center justify-center font-bold">2</span>
+        <div class="flex-1 h-px bg-[#e5e5ea] mx-2"></div>
+        <div id="step2Indicator" class="flex items-center gap-2 text-[#86868b]">
+          <span class="w-5 h-5 rounded-full bg-[#e8e8ed] text-[#86868b] text-[11px] flex items-center justify-center font-bold">2</span>
           <span>Clarify</span>
         </div>
-        <div class="flex-1 h-px bg-slate-800 mx-2"></div>
-        <div id="step3Indicator" class="flex items-center gap-2 text-slate-500 font-medium">
-          <span class="w-5 h-5 rounded-full bg-slate-800 text-slate-400 text-[11px] font-mono flex items-center justify-center font-bold">3</span>
+        <div class="flex-1 h-px bg-[#e5e5ea] mx-2"></div>
+        <div id="step3Indicator" class="flex items-center gap-2 text-[#86868b]">
+          <span class="w-5 h-5 rounded-full bg-[#e8e8ed] text-[#86868b] text-[11px] flex items-center justify-center font-bold">3</span>
           <span>Resolved</span>
         </div>
       </div>
 
       <!-- Intake Form View -->
       <div id="intakeView">
-        <label class="block text-xs font-mono uppercase tracking-wider text-slate-400 mb-2">
+        <label class="block text-xs font-semibold text-[#86868b] uppercase tracking-wider mb-2">
           Describe Your Situation
         </label>
         
@@ -193,7 +182,7 @@
           <textarea 
             id="probInput"
             rows="4"
-            class="w-full bg-[#090d14] text-slate-100 placeholder-slate-600 border border-slate-800 rounded-xl p-4 text-sm leading-relaxed focus:outline-none focus:border-indigo-500/80 transition-all font-mono resize-none"
+            class="apple-textarea w-full p-4 text-sm leading-relaxed placeholder-[#86868b] resize-none"
             placeholder="What happened? Type details here or pick a sample scenario below..."
           ></textarea>
         </div>
@@ -203,15 +192,15 @@
           <button 
             id="voiceBtn"
             onclick="toggleVoiceSim()"
-            class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-slate-900/80 border border-slate-800 hover:border-slate-700 text-xs text-slate-300 transition-all cursor-pointer"
+            class="apple-pill flex items-center gap-2.5 px-3.5 py-1.5 text-xs font-medium cursor-pointer"
           >
-            <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-3.5 h-3.5 text-[#0071e3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"/>
             </svg>
             <span id="voiceText">Voice Dictation</span>
 
             <!-- Subtle Soundwave bars -->
-            <div class="flex items-center gap-0.5 h-3.5 ml-1">
+            <div class="flex items-center gap-0.5 h-3.5 ml-0.5">
               <span class="wave-bar h-2"></span>
               <span class="wave-bar h-3.5"></span>
               <span class="wave-bar h-2.5"></span>
@@ -219,93 +208,93 @@
             </div>
           </button>
 
-          <span class="text-xs font-mono text-slate-500">
-            Ctrl + Enter to submit
+          <span class="text-xs text-[#86868b] font-mono">
+            Ctrl + Enter
           </span>
         </div>
 
-        <!-- Sample Reference Bank (Clean Minimal Pills) -->
-        <div class="mt-6 pt-5 border-t border-slate-800/70">
+        <!-- Sample Reference Bank (Apple Clean Pills) -->
+        <div class="mt-6 pt-5 border-t border-[#e5e5ea]">
           <div class="flex items-center justify-between mb-2.5">
-            <span class="text-xs text-slate-400 font-medium">Quick sample scenarios:</span>
+            <span class="text-xs text-[#86868b] font-semibold">Quick sample scenarios:</span>
           </div>
 
           <div class="flex flex-wrap gap-2">
-            <button onclick="fillScenario('My landlord kept my 1800 Euro Kaution deposit after 8 months and stopped answering emails.')" class="scenario-pill px-3 py-1.5 rounded-lg text-xs text-slate-300 font-medium cursor-pointer">
+            <button onclick="fillScenario('My landlord kept my 1800 Euro Kaution deposit after 8 months and stopped answering emails.')" class="apple-pill px-3.5 py-1.5 text-xs font-medium cursor-pointer">
               🏠 Landlord kept Kaution deposit
             </button>
-            <button onclick="fillScenario('Sudden blackout across our street in Berlin, no streetlights or power.')" class="scenario-pill px-3 py-1.5 rounded-lg text-xs text-slate-300 font-medium cursor-pointer">
+            <button onclick="fillScenario('Sudden blackout across our street in Berlin, no streetlights or power.')" class="apple-pill px-3.5 py-1.5 text-xs font-medium cursor-pointer">
               ⚡ Power blackout on street
             </button>
-            <button onclick="fillScenario('Student visa expires in 10 days and zero appointments on the LEA portal.')" class="scenario-pill px-3 py-1.5 rounded-lg text-xs text-slate-300 font-medium cursor-pointer">
+            <button onclick="fillScenario('Student visa expires in 10 days and zero appointments on the LEA portal.')" class="apple-pill px-3.5 py-1.5 text-xs font-medium cursor-pointer">
               🏛️ Student visa expires soon
             </button>
-            <button onclick="fillScenario('I smell gas in the basement hallway and it is getting very strong.')" class="scenario-pill px-3 py-1.5 rounded-lg text-xs text-rose-300 border-rose-500/20 hover:border-rose-500/40 font-medium cursor-pointer">
+            <button onclick="fillScenario('I smell gas in the basement hallway and it is getting very strong.')" class="apple-pill px-3.5 py-1.5 text-xs font-medium cursor-pointer text-rose-700 bg-rose-50 border-rose-200 hover:bg-rose-100">
               🚨 Gas smell in basement
             </button>
           </div>
         </div>
 
-        <!-- Primary Submit Button -->
+        <!-- Apple Primary Submit Button -->
         <div class="mt-7">
           <button 
             id="submitBtn"
             onclick="executeTriage()"
-            class="action-btn w-full py-3.5 px-6 rounded-xl font-semibold text-sm text-white tracking-wide flex items-center justify-center gap-2 cursor-pointer"
+            class="apple-btn-primary w-full py-3.5 px-6 font-semibold text-sm tracking-tight flex items-center justify-center gap-2 cursor-pointer shadow-sm"
           >
             <span>Analyse &amp; Route Problem</span>
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
           </button>
         </div>
       </div>
 
-      <!-- Clean Loading State -->
+      <!-- Clean Apple Loading State -->
       <div id="loadingView" class="hidden py-10 text-center">
-        <div class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-indigo-600/10 text-indigo-400 mb-3 animate-pulse">
+        <div class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-[#0071e3]/10 text-[#0071e3] mb-3">
           <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
         </div>
-        <p class="text-sm font-medium text-slate-200">Analysing problem details...</p>
-        <p class="text-xs text-slate-500 font-mono mt-1">Matching verified official departments in Berlin</p>
+        <p class="text-sm font-semibold text-[#1d1d1f]">Analysing problem details...</p>
+        <p class="text-xs text-[#86868b] mt-1">Connecting to official statutory bodies</p>
       </div>
 
       <!-- Results View -->
       <div id="resultsView" class="hidden pt-2">
         <!-- Banner -->
-        <div id="resultBanner" class="p-4 rounded-xl border mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900/60 border-slate-800">
+        <div id="resultBanner" class="p-4 rounded-2xl border mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#fbfbfd] border-[#e5e5ea]">
           <div class="flex items-center gap-2.5">
-            <span id="urgencyBadge" class="px-2.5 py-0.5 rounded text-[11px] font-mono font-bold uppercase tracking-wider"></span>
-            <span id="domainBadge" class="text-sm font-semibold text-white"></span>
+            <span id="urgencyBadge" class="px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider"></span>
+            <span id="domainBadge" class="text-sm font-bold text-[#1d1d1f]"></span>
           </div>
-          <div class="flex items-center gap-2 font-mono text-xs text-slate-400">
+          <div class="flex items-center gap-2 text-xs text-[#86868b] font-medium">
             <span>Confidence:</span>
-            <span id="confidenceText" class="text-white font-bold"></span>
+            <span id="confidenceText" class="text-[#1d1d1f] font-bold"></span>
           </div>
         </div>
 
         <!-- Issue -->
         <div class="mb-5">
-          <span class="text-xs font-mono uppercase tracking-wider text-slate-400 block mb-1">Diagnosed Issue</span>
-          <p id="issueSummary" class="text-sm text-slate-200 leading-relaxed bg-[#090d14] p-3.5 rounded-xl border border-slate-800"></p>
+          <span class="text-xs font-semibold text-[#86868b] uppercase tracking-wider block mb-1">Diagnosed Issue</span>
+          <p id="issueSummary" class="text-sm text-[#1d1d1f] leading-relaxed bg-[#fbfbfd] p-4 rounded-xl border border-[#e5e5ea]"></p>
         </div>
 
         <!-- Services -->
         <div class="mb-5">
-          <span class="text-xs font-mono uppercase tracking-wider text-slate-400 block mb-2">Verified Official Support</span>
+          <span class="text-xs font-semibold text-[#86868b] uppercase tracking-wider block mb-2">Verified Official Support</span>
           <div id="servicesContainer" class="space-y-2"></div>
         </div>
 
         <!-- Checklist -->
         <div class="mb-6">
-          <span class="text-xs font-mono uppercase tracking-wider text-slate-400 block mb-1.5">Action Plan</span>
-          <div id="checklistContainer" class="space-y-1.5 text-xs text-slate-300 bg-[#090d14] p-3.5 rounded-xl border border-slate-800"></div>
+          <span class="text-xs font-semibold text-[#86868b] uppercase tracking-wider block mb-1.5">Action Plan</span>
+          <div id="checklistContainer" class="space-y-1.5 text-xs text-[#1d1d1f] bg-[#fbfbfd] p-4 rounded-xl border border-[#e5e5ea]"></div>
         </div>
 
         <!-- Reset Button -->
         <button 
           onclick="resetForm()"
-          class="w-full py-2.5 px-4 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-900/50 hover:bg-slate-900 text-xs font-mono text-slate-300 hover:text-white transition-all cursor-pointer"
+          class="apple-pill w-full py-2.5 px-4 text-xs font-medium cursor-pointer"
         >
-          ← New Search
+          ← Start New Query
         </button>
       </div>
 
@@ -357,10 +346,10 @@
       const btn = document.getElementById('voiceBtn');
       if (isListening) {
         text.innerText = "Listening...";
-        btn.classList.add("border-indigo-500", "is-listening");
+        btn.classList.add("border-[#0071e3]", "is-listening");
       } else {
         text.innerText = "Voice Dictation";
-        btn.classList.remove("border-indigo-500", "is-listening");
+        btn.classList.remove("border-[#0071e3]", "is-listening");
       }
     }
 
@@ -381,7 +370,7 @@
 
       document.getElementById('intakeView').classList.add('hidden');
       document.getElementById('loadingView').classList.remove('hidden');
-      document.getElementById('step2Indicator').className = "flex items-center gap-2 font-medium text-white";
+      document.getElementById('step2Indicator').className = "flex items-center gap-2 text-[#0071e3] font-semibold";
 
       try {
         const response = await fetch('/api/triage', {
@@ -402,7 +391,7 @@
     function renderResults(data) {
       document.getElementById('loadingView').classList.add('hidden');
       document.getElementById('resultsView').classList.remove('hidden');
-      document.getElementById('step3Indicator').className = "flex items-center gap-2 font-medium text-white";
+      document.getElementById('step3Indicator').className = "flex items-center gap-2 text-[#0071e3] font-semibold";
 
       const urgencyBadge = document.getElementById('urgencyBadge');
       const domainBadge = document.getElementById('domainBadge');
@@ -412,11 +401,11 @@
       urgencyBadge.innerText = data.urgency || "MEDIUM";
 
       if (data.is_emergency || data.urgency === 'CRITICAL_EMERGENCY') {
-        banner.className = "p-4 rounded-xl border mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-rose-950/30 border-rose-500/50";
-        urgencyBadge.className = "px-2.5 py-0.5 rounded text-[11px] font-mono font-bold uppercase tracking-wider bg-rose-600 text-white";
+        banner.className = "p-4 rounded-2xl border mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-rose-50 border-rose-200";
+        urgencyBadge.className = "px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-rose-600 text-white";
       } else {
-        banner.className = "p-4 rounded-xl border mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900/60 border-slate-800";
-        urgencyBadge.className = "px-2.5 py-0.5 rounded text-[11px] font-mono font-bold uppercase tracking-wider bg-indigo-950 text-indigo-300 border border-indigo-800/40";
+        banner.className = "p-4 rounded-2xl border mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#fbfbfd] border-[#e5e5ea]";
+        urgencyBadge.className = "px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-[#0071e3]/10 text-[#0071e3]";
       }
 
       document.getElementById('confidenceText').innerText = (data.confidence_score || 94) + '%';
@@ -428,19 +417,19 @@
       if (data.recommended_services && data.recommended_services.length > 0) {
         data.recommended_services.forEach(s => {
           const div = document.createElement('div');
-          div.className = "p-3 rounded-lg bg-[#090d14] border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5";
+          div.className = "p-3.5 rounded-xl bg-white border border-[#e5e5ea] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5";
           div.innerHTML = `
             <div>
               <div class="flex items-center gap-2">
-                <span class="text-sm font-semibold text-white">${s.name}</span>
-                ${s.is_free ? '<span class="px-1.5 py-0.2 rounded text-[10px] font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/40">Free</span>' : ''}
+                <span class="text-sm font-semibold text-[#1d1d1f]">${s.name}</span>
+                ${s.is_free ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200">Free Service</span>' : ''}
               </div>
-              <p class="text-xs text-slate-400 mt-0.5">${s.role}</p>
-              ${s.phone ? `<p class="text-xs font-mono text-indigo-300 mt-0.5">☎ ${s.phone}</p>` : ''}
+              <p class="text-xs text-[#86868b] mt-0.5">${s.role}</p>
+              ${s.phone ? `<p class="text-xs font-mono text-[#0071e3] mt-0.5">☎ ${s.phone}</p>` : ''}
             </div>
             ${s.official_link ? `
-              <a href="${s.official_link}" target="_blank" rel="noopener" class="px-3 py-1 rounded text-xs font-mono bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 transition-colors self-start sm:self-auto flex items-center gap-1">
-                Portal ↗
+              <a href="${s.official_link}" target="_blank" rel="noopener" class="apple-pill px-3.5 py-1.5 text-xs font-semibold text-[#0071e3] hover:text-[#0077ed] self-start sm:self-auto flex items-center gap-1">
+                Official Portal ↗
               </a>
             ` : ''}
           `;
@@ -454,9 +443,9 @@
       if (data.action_checklist && data.action_checklist.length > 0) {
         data.action_checklist.forEach(step => {
           const div = document.createElement('label');
-          div.className = "flex items-start gap-2 cursor-pointer hover:text-slate-100 py-0.5";
+          div.className = "flex items-start gap-2 cursor-pointer hover:text-[#0071e3] py-0.5";
           div.innerHTML = `
-            <input type="checkbox" class="mt-0.5 rounded bg-slate-900 border-slate-700 text-indigo-500 focus:ring-0">
+            <input type="checkbox" class="mt-0.5 rounded border-[#d2d2d7] text-[#0071e3] focus:ring-0">
             <span>${step}</span>
           `;
           checklistBox.appendChild(div);
@@ -468,8 +457,8 @@
       document.getElementById('resultsView').classList.add('hidden');
       document.getElementById('loadingView').classList.add('hidden');
       document.getElementById('intakeView').classList.remove('hidden');
-      document.getElementById('step2Indicator').className = "flex items-center gap-2 text-slate-500 font-medium";
-      document.getElementById('step3Indicator').className = "flex items-center gap-2 text-slate-500 font-medium";
+      document.getElementById('step2Indicator').className = "flex items-center gap-2 text-[#86868b] font-medium";
+      document.getElementById('step3Indicator').className = "flex items-center gap-2 text-[#86868b] font-medium";
       document.getElementById('probInput').value = '';
     }
   </script>
