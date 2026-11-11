@@ -12,7 +12,7 @@ mindmap
       Unstructured Complaint Input
     2. Triage & Guardrails
       Sub-millisecond Regex Interceptor 112 110
-      Constrained LLM Gemini 3.5 Flash Lite
+      Dual-Mode LLM Cloud Gemini and Offline Ollama
       Semantic Confidence Scoring
       Clarification State Machine
     3. Knowledge Grounding
@@ -24,10 +24,10 @@ mindmap
       Consumer Rights & Fraud VZ Berlin
       IT Telecom & Handwerk HWK
     4. Empirical Evaluation
-      95.2 Percent Domain Accuracy
+      100 Percent Cloud Gemini Domain Accuracy
+      80 Percent Offline Ollama Domain Accuracy
       100 Percent Emergency Recall
-      1.12 Seconds Average Latency
-      21 Ground-Truth Scenarios
+      1.15s Cloud vs 28.95s Offline Latency
       Zero Contact Hallucinations
     5. Infrastructure & Data
       FastAPI Python 3 Async Backend

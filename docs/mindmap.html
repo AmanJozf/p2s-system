@@ -112,8 +112,21 @@
     .btn:hover { background: #4338CA; }
 
     @media print {
-      body { background: #fff !important; color: #000 !important; }
-      .root-node, .branch-card, .node-item { background: #fff !important; color: #000 !important; border: 1px solid #ccc !important; box-shadow: none !important; }
+      @page { size: A4 landscape; margin: 10mm; }
+      body { background: #fff !important; color: #0f172a !important; padding: 0.5rem !important; min-height: auto !important; }
+      .header { margin-bottom: 1rem !important; }
+      .header h1 { font-size: 1.5rem !important; color: #1e293b !important; }
+      .header p { font-size: 0.8rem !important; color: #475569 !important; }
+      .root-node { padding: 0.6rem 1.2rem !important; margin-bottom: 1rem !important; }
+      .root-node h2 { font-size: 1.1rem !important; color: #0f172a !important; }
+      .root-node p { font-size: 0.78rem !important; color: #475569 !important; }
+      .branches-grid { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; gap: 0.75rem !important; }
+      .branch-card { padding: 0.75rem !important; page-break-inside: avoid; break-inside: avoid; }
+      .branch-header { font-size: 0.9rem !important; margin-bottom: 0.5rem !important; padding-bottom: 0.4rem !important; border-bottom-color: #cbd5e1 !important; }
+      .node-list { gap: 0.35rem !important; }
+      .node-item { padding: 0.35rem 0.55rem !important; font-size: 0.72rem !important; background: #f8fafc !important; color: #334155 !important; border: 1px solid #cbd5e1 !important; }
+      .node-item strong { color: #0f172a !important; }
+      .root-node, .branch-card { background: #fff !important; color: #0f172a !important; border: 1px solid #cbd5e1 !important; box-shadow: none !important; }
       .footer-actions { display: none !important; }
     }
   </style>
@@ -156,7 +169,7 @@
         </div>
         <ul class="node-list">
           <li class="node-item">⚡ <strong>Deterministic Regex:</strong> Sub-ms 112/110 hazard intercept</li>
-          <li class="node-item">🧠 <strong>Gemini 3.5 Flash Lite:</strong> Constrained JSON generation</li>
+          <li class="node-item">🧠 <strong>Dual-Mode LLM:</strong> Cloud Gemini &amp; Offline Ollama</li>
           <li class="node-item">🎯 <strong>Confidence Scoring:</strong> Semantic match percentage metric</li>
           <li class="node-item">🤔 <strong>State Machine:</strong> Ambiguity follow-up clarification</li>
         </ul>
@@ -183,11 +196,11 @@
           <span>📊</span> 4. Thesis Evaluation Suite
         </div>
         <ul class="node-list">
-          <li class="node-item">🧪 <strong>Benchmark Suite:</strong> 21 Ground-truth scenarios</li>
-          <li class="node-item">🎯 <strong>95.2% Accuracy:</strong> Domain classification score</li>
-          <li class="node-item">⚡ <strong>1.12s Latency:</strong> Mean interactive response time</li>
-          <li class="node-item">🛡️ <strong>100% Emergency Recall:</strong> Perfect safety interception</li>
-          <li class="node-item">📈 <strong>Data Artifacts:</strong> CSV & LaTeX-ready reports</li>
+          <li class="node-item">🧪 <strong>Benchmark Suite:</strong> 70-case v2 ground-truth matrix</li>
+          <li class="node-item">🎯 <strong>Domain Accuracy:</strong> 100.0% Cloud Gemini · 80.0% Local Ollama</li>
+          <li class="node-item">⚡ <strong>Mean Latency:</strong> 1.15s Cloud · 28.95s Offline CPU</li>
+          <li class="node-item">🛡️ <strong>Safety Recall:</strong> 100.0% Emergency Recall &amp; 0% False Alarms</li>
+          <li class="node-item">📈 <strong>Data Artifacts:</strong> Markdown &amp; CSV evaluation reports</li>
         </ul>
       </div>
 
@@ -209,7 +222,7 @@
   </div>
 
   <div class="footer-actions">
-    <button class="btn" onclick="window.print()">🖨️ Print / Save as PDF to Email Boss</button>
+    <button class="btn" onclick="window.print()">🖨️ Print / Save as PDF</button>
   </div>
 
 </body>
