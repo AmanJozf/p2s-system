@@ -3,10 +3,15 @@
 > **AI-Powered Public Service Triage & Routing System**  
 > *MSc Computer Science Thesis Project*
 
+[![Live Demo](https://img.shields.io/badge/Live_Demo-p2s--system.vercel.app-black?logo=vercel)](https://p2s-system.vercel.app)
+[![Thesis Topic Sheet](https://img.shields.io/badge/Thesis_Topic_Sheet-PDF-red?logo=adobeacrobatreader)](docs/P2S_Thesis_Topic_Sheet.pdf)
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/Framework-FastAPI-green.svg)](https://fastapi.tiangolo.com/)
 [![Status](https://img.shields.io/badge/Build-Passing-brightgreen.svg)](https://github.com/AmanJozf/p2s-system)
 [![Accuracy](https://img.shields.io/badge/Benchmark_Accuracy-95.2%25-blueviolet.svg)](docs/EVALUATION_REPORT.md)
+
+🌐 **Live Production Link:** [https://p2s-system.vercel.app](https://p2s-system.vercel.app)  
+📄 **Thesis Topic Proposal:** [docs/P2S_Thesis_Topic_Sheet.pdf](docs/P2S_Thesis_Topic_Sheet.pdf)
 
 ---
 
