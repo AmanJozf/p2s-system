@@ -147,11 +147,6 @@
             Describe what happened in plain German or English.
           </p>
         </div>
-
-        <button onclick="runScramble()" title="Re-trigger scramble animation" class="text-[#86868b] hover:text-[#0071e3] transition-colors p-2 text-xs font-medium flex items-center gap-1 cursor-pointer">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-          <span class="hidden sm:inline">Scramble</span>
-        </button>
       </div>
 
       <!-- Apple Stepper Progress -->
@@ -183,11 +178,11 @@
             id="probInput"
             rows="4"
             class="apple-textarea w-full p-4 text-sm leading-relaxed placeholder-[#86868b] resize-none"
-            placeholder="What happened? Type details here or pick a sample scenario below..."
+            placeholder="Describe what happened in plain German or English..."
           ></textarea>
         </div>
 
-        <!-- Dictation & Keyboard shortcut bar -->
+        <!-- Dictation & Actions bar -->
         <div class="flex items-center justify-between mt-3">
           <button 
             id="voiceBtn"
@@ -207,19 +202,20 @@
               <span class="wave-bar h-3"></span>
             </div>
           </button>
-
-          <span class="text-xs text-[#86868b] font-mono">
-            Ctrl + Enter
-          </span>
         </div>
 
-        <!-- Sample Reference Bank (Apple Clean Pills) -->
-        <div class="mt-6 pt-5 border-t border-[#e5e5ea]">
-          <div class="flex items-center justify-between mb-2.5">
-            <span class="text-xs text-[#86868b] font-semibold">Quick sample scenarios:</span>
-          </div>
+        <!-- Sample Scenarios (Clean Collapsible) -->
+        <div class="mt-4">
+          <button 
+            type="button" 
+            onclick="togglePreviewScenarios()" 
+            class="text-xs font-semibold text-[#0071e3] hover:text-[#0077ed] transition-colors flex items-center gap-1.5 cursor-pointer bg-transparent border-0 p-0"
+          >
+            <span id="previewToggleIcon">▶</span>
+            <span>Sample Scenarios</span>
+          </button>
 
-          <div class="flex flex-wrap gap-2">
+          <div id="previewScenariosList" class="hidden flex-wrap gap-2 mt-3 pt-3 border-t border-[#e5e5ea]">
             <button onclick="fillScenario('My landlord kept my 1800 Euro Kaution deposit after 8 months and stopped answering emails.')" class="apple-pill px-3.5 py-1.5 text-xs font-medium cursor-pointer">
               🏠 Landlord kept Kaution deposit
             </button>
@@ -331,11 +327,26 @@
     // Run on page load
     runScramble();
 
-    // ── 2. Autofill Helper ──────────────────────────────────────────────────────
+    // ── 2. Autofill Helper & Toggle ────────────────────────────────────────────
     function fillScenario(text) {
       const input = document.getElementById('probInput');
       input.value = text;
       input.focus();
+    }
+
+    function togglePreviewScenarios() {
+      const el = document.getElementById('previewScenariosList');
+      const icon = document.getElementById('previewToggleIcon');
+      const isHidden = el.classList.contains('hidden');
+      if (isHidden) {
+        el.classList.remove('hidden');
+        el.classList.add('flex');
+        icon.textContent = '▼';
+      } else {
+        el.classList.add('hidden');
+        el.classList.remove('flex');
+        icon.textContent = '▶';
+      }
     }
 
     // ── 3. Voice Dictation Toggle ───────────────────────────────────────────────

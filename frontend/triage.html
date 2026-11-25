@@ -162,12 +162,12 @@
         <button class="voice-btn" id="voice-btn" onclick="toggleVoice()">
           <span id="voice-icon">🎙️</span> <span id="voice-text">Voice Dictation</span>
         </button>
-        <span style="font-size:.75rem;color:var(--muted);" id="ui-hint">Ctrl+Enter to submit</span>
+        <span style="display:none;" id="ui-hint"></span>
       </div>
 
       <div style="margin-top:14px;">
-        <button type="button" onclick="toggleChipsDrawer()" style="background:transparent;border:none;color:var(--brand);font-size:0.8rem;font-weight:700;cursor:pointer;padding:0;display:inline-flex;align-items:center;gap:4px;">
-          <span id="chips-toggle-icon">▶</span> <span id="chips-toggle-text">Show sample problem scenarios (Reference bank)</span>
+        <button type="button" onclick="toggleChipsDrawer()" style="background:transparent;border:none;color:var(--brand);font-size:0.82rem;font-weight:700;cursor:pointer;padding:0;display:inline-flex;align-items:center;gap:5px;">
+          <span id="chips-toggle-icon">▶</span> <span id="chips-toggle-text">Sample Scenarios</span>
         </button>
         <div class="example-chips hidden" id="chips-container" style="margin-top:8px;">
           <!-- Dynamically populated via nav.js based on current language -->
