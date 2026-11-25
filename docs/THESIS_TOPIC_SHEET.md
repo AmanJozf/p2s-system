@@ -16,11 +16,11 @@ This research extends the working prototype developed during the **Individual Pr
 ---
 
 ### 2. Research Questions
-* **Primary Question:** How accurately and safely can a dual-layer neuro-symbolic triage architecture classify unstructured citizen complaints and route them to verified statutory services in Berlin, compared to standard cloud LLMs, local edge models (Ollama), and rule-based baselines?
+* **Primary Question:** How effectively can a hybrid LLM triage pipeline classify unstructured citizen problem descriptions and route them to verified public services in Berlin, compared with traditional keyword-based matching?
 * **Sub-Questions:**
-  1. *Safety Interception:* Can sub-millisecond deterministic regex filters guarantee 100% recall for physical life-safety hazards (112/110) while maintaining near-zero false alarms on benign linguistic negatives?
-  2. *Edge vs. Cloud Feasibility:* What are the measurable performance trade-offs (inference latency, categorization accuracy, hardware constraints) between cloud-hosted models (Gemini 3.5 Flash Lite) and fully local, offline CPU models (Ollama Llama 3.2:3b)?
-  3. *Hallucination Mitigation:* Does strict retrieval-augmented grounding against an authenticated municipal registry eliminate contact hallucination compared to raw generative outputs?
+  1. *Emergency Guardrails:* How reliably can rule-based pre-filters intercept critical life-safety hazards (such as gas leaks or medical emergencies) compared to relying on LLM classification alone?
+  2. *Cloud vs. Local Edge Performance:* What are the measurable trade-offs in categorization accuracy, response latency, and citizen data privacy when comparing cloud APIs (Gemini) with lightweight offline models (Ollama) running locally?
+  3. *Hallucination Mitigation:* How effectively does grounding LLM outputs in a verified municipal database eliminate fabricated contact details and outdated administrative procedures?
 
 ---
 
@@ -35,7 +35,7 @@ This research extends the working prototype developed during the **Individual Pr
 ---
 
 ### 4. Proposed Contribution
-* **Hybrid Neuro-Symbolic Safety Architecture:** Demonstrating that critical public sector triage requires deterministic pre-LLM guardrails rather than probabilistic prompt instructions alone.
+* **Hybrid Triage Architecture:** Demonstrating that high-stakes civic triage requires rule-based pre-filters for life-safety hazards rather than relying on prompt instructions alone.
 * **Empirical Cloud vs. Edge Benchmark:** Delivering real-world benchmark data on whether small quantized edge models (3B parameters) running locally on consumer hardware can meet municipal safety and categorization standards under strict GDPR constraints.
 * **Grounded Civic Routing:** A proven pipeline that prevents generative hallucinations by strictly binding classification outputs to authenticated regional services.
 
