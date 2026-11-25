@@ -384,7 +384,7 @@
       document.getElementById('step2Indicator').className = "flex items-center gap-2 text-[#0071e3] font-semibold";
 
       try {
-        const response = await fetch('/api/triage', {
+        const response = await fetch('/api/triage/start', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ problem_description: input })

@@ -58,6 +58,7 @@ for route, filepath in PAGES.items():
     app.get(route, include_in_schema=False)(make_handler(filepath))
 
 # ── Triage Endpoints ──────────────────────────────────────────────────────────
+@app.post("/api/triage", response_model=TriageResponse, tags=["Triage"])
 @app.post("/api/triage/start", response_model=TriageResponse, tags=["Triage"])
 def start_triage(request: ProblemRequest):
     """Submit a plain-language problem. Returns follow-up question or resolved checklist."""
