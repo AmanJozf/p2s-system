@@ -30,7 +30,6 @@ const I18N = {
     export_pdf_btn: '📄 Export Official PDF / Print',
     emergency_title: 'URGENT SAFETY HAZARD',
     chips: [
-      '🏢 Hausmeister not responding, need electrical room for fuse',
       '🏠 Landlord kept my Kaution deposit 8 months after move-out',
       '🏛️ Student visa expires next week, no LEA appointment available',
       '⚡ Sudden power blackout across the whole street in Berlin',
@@ -68,7 +67,6 @@ const I18N = {
     export_pdf_btn: '📄 Offiziellen Maßnahmenplan drucken (PDF)',
     emergency_title: 'AKUTE GEFAHR / NOTFALL',
     chips: [
-      '🏢 Hausmeister reagiert nicht, Stromraum für Sicherung verschlossen',
       '🏠 Vermieter zahlt Mietkaution nach 8 Monaten nicht zurück',
       '🏛️ Studentenvisum läuft bald ab, kein Termin beim LEA Berlin',
       '⚡ Plötzlicher Stromausfall im gesamten Straßenzug',

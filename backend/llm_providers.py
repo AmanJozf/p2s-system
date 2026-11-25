@@ -48,33 +48,38 @@ class GeminiProvider:
     def generate_json(self, prompt: str, system: str = "", schema: dict | None = None) -> dict:
         contents = f"{system}\n\n{prompt}" if system else prompt
         last_err = None
-        for attempt in range(4):
-            try:
-                resp = self.client.models.generate_content(
-                    model=self.model,
-                    contents=contents,
-                    config=self._types.GenerateContentConfig(
-                        response_mime_type="application/json",
-                        temperature=0.2,
-                    ),
-                )
-                return json.loads(resp.text)
-            except json.JSONDecodeError as e:
-                last_err = e
-                break
-            except Exception as e:  # network / quota / overload
-                last_err = e
-                msg = str(e)
-                if attempt == 3:
+        # Fallback cascade to avoid 503 "model high demand" traffic spikes
+        candidate_models = [self.model]
+        for m in ["gemini-3.5-flash", "gemini-3.5-flash-lite"]:
+            if m not in candidate_models:
+                candidate_models.append(m)
+
+        for model_name in candidate_models:
+            for attempt in range(2):
+                try:
+                    resp = self.client.models.generate_content(
+                        model=model_name,
+                        contents=contents,
+                        config=self._types.GenerateContentConfig(
+                            response_mime_type="application/json",
+                            temperature=0.2,
+                        ),
+                    )
+                    return json.loads(resp.text)
+                except json.JSONDecodeError as e:
+                    last_err = e
                     break
-                if "429" in msg or "RESOURCE_EXHAUSTED" in msg:
-                    m = re.search(r"retry in ([\d.]+)s", msg)
-                    time.sleep(min(float(m.group(1)) + 1 if m else 20, 65))
-                    continue
-                if any(code in msg for code in ("503", "UNAVAILABLE", "504", "DEADLINE")):
-                    time.sleep(2 * (attempt + 1))
-                    continue
-                break
+                except Exception as e:
+                    last_err = e
+                    msg = str(e)
+                    # If 503 unavailable, failover immediately to next candidate model
+                    if any(code in msg for code in ("503", "UNAVAILABLE", "504", "DEADLINE")):
+                        break
+                    if "429" in msg or "RESOURCE_EXHAUSTED" in msg:
+                        m_wait = re.search(r"retry in ([\d.]+)s", msg)
+                        time.sleep(min(float(m_wait.group(1)) + 0.5 if m_wait else 2.0, 5.0))
+                        continue
+                    break
         raise LLMError(f"Gemini request failed: {last_err}")
 
 
