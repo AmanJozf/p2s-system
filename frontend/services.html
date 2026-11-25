@@ -38,7 +38,7 @@
     .svc-card-name { font-size:.95rem; font-weight:700; }
     .svc-card-body { padding:1.25rem; flex:1; display:flex; flex-direction:column; justify-content:space-between; }
     .svc-card-role { font-size:.85rem; color:var(--muted); line-height:1.5; margin-bottom:1.25rem; }
-    .svc-card-foot { display:flex; align-items:center; justify-content:space-between; }
+    .svc-card-foot { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; padding-top:.5rem; }
   </style>
 </head>
 <body>
@@ -212,7 +212,7 @@ function renderServices() {
             ${costTag}
             ${s.official_link?.startsWith('http') || s.official_link?.startsWith('tel:') 
               ? `<a href="${s.official_link}" target="_blank" class="btn btn-sm btn-secondary">${buttonLabel}</a>`
-              : `<span class="btn btn-sm btn-ghost" style="cursor:default;font-size:0.75rem;">${s.official_link}</span>`}
+              : `<span class="tag tag-neutral" style="font-size:0.75rem;">📋 Hausaushang 24h</span>`}
           </div>
         </div>
       </div>`;

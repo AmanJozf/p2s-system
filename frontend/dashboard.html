@@ -15,11 +15,13 @@
     .kpi-card {
       background:#fff; border:1px solid var(--border); border-radius:var(--radius);
       padding:1.25rem 1.5rem;
+      display: flex; flex-direction: column; justify-content: space-between;
     }
+    .kpi-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
     .kpi-label { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:var(--muted); }
-    .kpi-value { font-size:2rem; font-weight:900; color:var(--text); margin:.25rem 0 .1rem; line-height:1; }
+    .kpi-value { font-size:1.75rem; font-weight:900; color:var(--text); margin:.35rem 0 .15rem; line-height:1.2; word-break: break-word; }
     .kpi-sub { font-size:.75rem; color:var(--muted); }
-    .kpi-icon { font-size:1.5rem; float:right; margin-top:-2.5rem; }
+    .kpi-icon { font-size:1.4rem; flex-shrink: 0; }
 
     .charts-row { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; margin-bottom:2rem; }
     .chart-card { background:#fff; border:1px solid var(--border); border-radius:var(--radius); padding:1.5rem; }
@@ -55,10 +57,26 @@
 
     <!-- KPI Row -->
     <div class="kpi-row" id="kpi-row">
-      <div class="kpi-card"><div class="kpi-label">Total Sessions</div><div class="kpi-value" id="k-total">—</div><div class="kpi-icon">🔍</div><div class="kpi-sub">All time</div></div>
-      <div class="kpi-card"><div class="kpi-label">Resolved Directly</div><div class="kpi-value" id="k-resolved">—</div><div class="kpi-icon">✅</div><div class="kpi-sub">No follow-up needed</div></div>
-      <div class="kpi-card"><div class="kpi-label">Needed Clarification</div><div class="kpi-value" id="k-clarified">—</div><div class="kpi-icon">🤔</div><div class="kpi-sub">Follow-up question asked</div></div>
-      <div class="kpi-card"><div class="kpi-label">Most Common Domain</div><div class="kpi-value" id="k-top-domain" style="font-size:1.2rem;margin-top:.4rem;">—</div><div class="kpi-icon">📂</div><div class="kpi-sub">By session count</div></div>
+      <div class="kpi-card">
+        <div class="kpi-header"><div class="kpi-label">Total Sessions</div><div class="kpi-icon">🔍</div></div>
+        <div class="kpi-value" id="k-total">—</div>
+        <div class="kpi-sub">All time</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-header"><div class="kpi-label">Resolved Directly</div><div class="kpi-icon">✅</div></div>
+        <div class="kpi-value" id="k-resolved">—</div>
+        <div class="kpi-sub">No follow-up needed</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-header"><div class="kpi-label">Needed Clarification</div><div class="kpi-icon">🤔</div></div>
+        <div class="kpi-value" id="k-clarified">—</div>
+        <div class="kpi-sub">Follow-up question asked</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-header"><div class="kpi-label">Most Common Domain</div><div class="kpi-icon">📂</div></div>
+        <div class="kpi-value" id="k-top-domain" style="font-size:1.05rem;">—</div>
+        <div class="kpi-sub">By session count</div>
+      </div>
     </div>
 
     <!-- Charts -->
@@ -121,21 +139,21 @@ async function loadData() {
       type:'doughnut',
       data: {
         labels: dLabels,
-        datasets:[{ data:dVals, backgroundColor:['#4F6EF7','#22C55E','#F59E0B','#94A3B8'], borderWidth:0 }]
+        datasets:[{ data:dVals, backgroundColor:['#4F6EF7','#22C55E','#F59E0B','#06B6D4','#8B5CF6','#EC4899','#3B82F6','#64748B'], borderWidth:0 }]
       },
       options:{ plugins:{ legend:{ position:'bottom', labels:{ font:{size:12}, padding:16 } } }, cutout:'65%' }
     });
 
     // Urgency chart
     const urgData = data.by_urgency || {};
-    const uLabels = ['Low','Medium','High'];
-    const uVals   = uLabels.map(u => urgData[u]||0);
+    const uLabels = ['Low','Medium','High','Critical'];
+    const uVals   = uLabels.map(u => (urgData[u] || (u === 'Critical' ? urgData['CRITICAL EMERGENCY'] : 0) || 0));
     if (urgencyChart) urgencyChart.destroy();
     urgencyChart = new Chart(document.getElementById('chart-urgency'), {
       type:'bar',
       data: {
         labels: uLabels,
-        datasets:[{ data:uVals, backgroundColor:['#22C55E','#F59E0B','#EF4444'], borderRadius:6, borderWidth:0 }]
+        datasets:[{ data:uVals, backgroundColor:['#22C55E','#F59E0B','#F97316','#EF4444'], borderRadius:6, borderWidth:0 }]
       },
       options:{
         plugins:{ legend:{display:false} },

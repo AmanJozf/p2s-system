@@ -102,6 +102,7 @@
     }
 
     @media(max-width:900px) { .domains-grid { grid-template-columns:repeat(2,1fr); } }
+    @media(max-width:768px) { .statutory-grid { grid-template-columns:1fr !important; } }
     @media(max-width:600px) {
       .steps-row, .domains-grid { grid-template-columns:1fr; }
       .stats-row { gap:2rem; }
@@ -109,6 +110,23 @@
   </style>
 </head>
 <body>
+
+<!-- EMERGENCY BAR -->
+<aside class="emergency-topbar" style="background:#0F172A; color:#E2E8F0; border-bottom:1px solid #1E293B; font-size:11px; font-weight:500; padding:8px 0;">
+  <div class="container" style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px;">
+    <div style="display:flex; align-items:center; gap:8px;">
+      <span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#34D399; box-shadow:0 0 6px rgba(52,211,153,.6);"></span>
+      <span style="color:#CBD5E1; font-weight:600;">Berlin Emergency Services</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:16px; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;">
+      <a href="tel:112" style="color:#E2E8F0; text-decoration:none;"><strong style="color:#fff;">112</strong> Feuerwehr</a>
+      <span style="color:#475569;">·</span>
+      <a href="tel:110" style="color:#E2E8F0; text-decoration:none;"><strong style="color:#fff;">110</strong> Polizei</a>
+      <span style="color:#475569;">·</span>
+      <a href="tel:116117" style="color:#E2E8F0; text-decoration:none;"><strong style="color:#fff;">116 117</strong> Notdienst</a>
+    </div>
+  </div>
+</aside>
 
 <nav id="p2s-nav"></nav>
 
@@ -221,6 +239,14 @@
         <div class="domain-count">HWK Berlin →</div>
       </a>
     </div>
+
+    <div class="cta-banner">
+      <h2>Have a problem right now?</h2>
+      <p>Describe your issue and get a tailored step-by-step action plan in seconds.</p>
+      <a href="/triage" class="btn">🔍 Launch Triage Engine</a>
+    </div>
+  </div>
+</section>
 
     <div class="cta-banner">
       <h2>Have a problem right now?</h2>

@@ -75,7 +75,20 @@
 <div id="toast"></div>
 <script src="/static/nav.js"></script>
 <script>
-const domainIcons = { Housing:'🏠', IT:'💻', Appliances:'⚙️', Other:'📋' };
+const domainIcons = {
+  'Tenancy & Housing Law': '🏠',
+  'Facility & Building Emergencies': '🏢',
+  'Utilities & Energy Crises': '⚡',
+  'Bureaucracy & Immigration': '🏛️',
+  'Health & Medical Care': '🏥',
+  'Consumer Protection & Contracts': '🛡️',
+  'IT, Telecom & Connectivity': '💻',
+  'Home Appliances & Craftspeople': '🔧',
+  'Housing': '🏠',
+  'IT': '💻',
+  'Appliances': '⚙️',
+  'Other': '📋'
+};
 
 function loadHistory() {
   const hist = JSON.parse(localStorage.getItem('p2s_history') || '[]');

@@ -48,6 +48,7 @@ PAGES = {
     "/about":     os.path.join(BASE_DIR, "frontend", "about.html"),
     "/admin":     os.path.join(BASE_DIR, "frontend", "admin.html"),
     "/preview":   os.path.join(BASE_DIR, "frontend", "preview.html"),
+    "/preview2":  os.path.join(BASE_DIR, "frontend", "preview2.html"),
 }
 
 for route, filepath in PAGES.items():

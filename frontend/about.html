@@ -67,20 +67,20 @@
         <div class="arch-diagram">
 ┌─────────────────────────────────────────────────┐
 │               Web Frontend (HTML/JS)            │
-│   Home · Triage · Services · Dashboard         │
-└────────────────────┬────────────────────────────┘
-                     │ HTTP (JSON)
-                     ▼
+│       Home · Triage · Services · Dashboard      │
+└────────────────────────┬────────────────────────┘
+                         │ HTTP (JSON)
+                         ▼
 ┌─────────────────────────────────────────────────┐
 │            FastAPI Backend (Python)             │
 │                                                 │
-│  ┌──────────────┐   ┌───────────────────────┐  │
-│  │ Triage Engine│   │  Knowledge Base (SQLite│  │
-│  │ (NLP / LLM)  │──▶│  + Curated Services)  │  │
-│  └──────┬───────┘   └───────────────────────┘  │
-│         │                                       │
-│  ┌──────┴──────────────┐                        │
-│  │   LLM Provider      │                        │
+│  ┌───────────────┐     ┌─────────────────────┐  │
+│  │ Triage Engine │     │   Knowledge Base    │  │
+│  │  (NLP / LLM)  │────▶│ (SQLite + Curated)  │  │
+│  └───────┬───────┘     └─────────────────────┘  │
+│          │                                      │
+│  ┌───────┴─────────────┐                        │
+│  │    LLM Provider     │                        │
 │  │  ┌───────────────┐  │                        │
 │  │  │ Gemini (Cloud)│  │  ← Online Mode         │
 │  │  ├───────────────┤  │                        │
@@ -91,7 +91,7 @@
 
         <h2>Methodology</h2>
         <ul>
-          <li><strong>Phase 1:</strong> Requirement gathering and domain taxonomy design (Housing, IT, Appliances).</li>
+          <li><strong>Phase 1:</strong> Requirement gathering and domain taxonomy design (8 Comprehensive Berlin Life Domains).</li>
           <li><strong>Phase 2:</strong> Structured Output LLM pipeline with constrained JSON generation via Pydantic schemas.</li>
           <li><strong>Phase 3:</strong> Evaluation — comparing Cloud (Gemini) vs Local (Ollama) on accuracy, latency, and privacy.</li>
           <li><strong>Phase 4:</strong> User study — measuring reduction in time-to-resolution vs traditional directory search.</li>
@@ -119,12 +119,15 @@
         </div>
 
         <div class="info-card">
-          <h4>Domain Coverage</h4>
-          <div class="info-row"><span>🏠 Housing & Tenancy</span><span class="tag tag-success">Active</span></div>
-          <div class="info-row"><span>💻 IT & Connectivity</span><span class="tag tag-success">Active</span></div>
-          <div class="info-row"><span>⚙️ Home Appliances</span><span class="tag tag-success">Active</span></div>
-          <div class="info-row"><span>⚖️ Consumer Rights</span><span class="tag tag-warn">Planned</span></div>
-          <div class="info-row"><span>🏥 Healthcare</span><span class="tag tag-warn">Planned</span></div>
+          <h4>Domain Coverage (Berlin)</h4>
+          <div class="info-row"><span>🏠 Tenancy &amp; Housing</span><span class="tag tag-success">Active</span></div>
+          <div class="info-row"><span>🏢 Facility &amp; Building</span><span class="tag tag-success">Active</span></div>
+          <div class="info-row"><span>⚡ Utilities &amp; Grid</span><span class="tag tag-success">Active</span></div>
+          <div class="info-row"><span>🏛️ Bureaucracy (LEA/115)</span><span class="tag tag-success">Active</span></div>
+          <div class="info-row"><span>🏥 Health &amp; Medical</span><span class="tag tag-success">Active</span></div>
+          <div class="info-row"><span>🛡️ Consumer Rights</span><span class="tag tag-success">Active</span></div>
+          <div class="info-row"><span>💻 IT &amp; Telecom</span><span class="tag tag-success">Active</span></div>
+          <div class="info-row"><span>🔧 Appliances &amp; Crafts</span><span class="tag tag-success">Active</span></div>
         </div>
 
         <div class="info-card">

@@ -6,8 +6,81 @@
   <title>P2S — Triage Tool</title>
   <link rel="stylesheet" href="/static/styles.css"/>
   <style>
-    .triage-wrap { width: 100%; max-width: 760px; margin: 0 auto; padding: 2.5rem 1rem 5rem; box-sizing: border-box; }
+    .triage-wrap { width: 100%; max-width: 1120px; margin: 0 auto; padding: 2rem 1.25rem 5rem; box-sizing: border-box; }
     .card { width: 100%; box-sizing: border-box; }
+    .triage-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 350px;
+      gap: 1.75rem;
+      align-items: start;
+    }
+    @media (max-width: 960px) {
+      .triage-grid { grid-template-columns: 1fr; }
+    }
+    .domain-accordion-item {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg);
+      overflow: hidden;
+      transition: all .2s;
+    }
+    .domain-accordion-item:hover {
+      border-color: #cbd5e1;
+      background: #f1f5f9;
+    }
+    .domain-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: transparent;
+      border: none;
+      text-align: left;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .domain-chevron {
+      font-size: 0.7rem;
+      color: var(--muted);
+      transition: transform .2s ease;
+    }
+    .domain-accordion-item.open .domain-chevron {
+      transform: rotate(180deg);
+      color: var(--brand);
+    }
+    .domain-content {
+      display: none;
+      padding: 0 14px 12px;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      color: var(--text-2);
+      border-top: 1px dashed var(--border);
+      background: #fff;
+    }
+    .domain-accordion-item.open .domain-content {
+      display: block;
+    }
+    .domain-example-chip {
+      display: inline-block;
+      margin-top: 8px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--brand);
+      background: var(--brand-light);
+      border: 1px solid rgba(79,110,247,0.3);
+      border-radius: 6px;
+      padding: 3px 9px;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .domain-example-chip:hover {
+      background: var(--brand);
+      color: #fff;
+    }
 
     /* Progress */
     .progress-bar { display:flex; align-items:center; justify-content:center; gap:0; margin-bottom:2.5rem; }
@@ -112,7 +185,7 @@
     @media print {
       body { background: #fff !important; color: #000 !important; }
       #p2s-nav, #p2s-footer, .progress-bar, .example-chips, #submit-btn, .input-actions-bar,
-      .filter-btns, .toolbar, button, #toast { display: none !important; }
+      .filter-btns, .toolbar, button, #toast, .statutory-sidebar, .emergency-topbar { display: none !important; }
       .triage-wrap { max-width: 100% !important; padding: 0 !important; }
       .card { border: none !important; box-shadow: none !important; }
       .print-header { display: block !important; margin-bottom: 2rem; border-bottom: 2px solid #000; padding-bottom: 1rem; }
@@ -122,6 +195,23 @@
   </style>
 </head>
 <body>
+
+<!-- EMERGENCY BAR -->
+<aside class="emergency-topbar no-print" style="background:#0F172A; color:#E2E8F0; border-bottom:1px solid #1E293B; font-size:11px; font-weight:500; padding:8px 0;">
+  <div style="max-width:1120px; margin:0 auto; padding:0 1.25rem; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px;">
+    <div style="display:flex; align-items:center; gap:8px;">
+      <span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#34D399; box-shadow:0 0 6px rgba(52,211,153,.6);"></span>
+      <span style="color:#CBD5E1; font-weight:600;">Berlin Emergency Services</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:16px; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;">
+      <a href="tel:112" style="color:#E2E8F0; text-decoration:none;"><strong style="color:#fff;">112</strong> Feuerwehr</a>
+      <span style="color:#475569;">·</span>
+      <a href="tel:110" style="color:#E2E8F0; text-decoration:none;"><strong style="color:#fff;">110</strong> Polizei</a>
+      <span style="color:#475569;">·</span>
+      <a href="tel:116117" style="color:#E2E8F0; text-decoration:none;"><strong style="color:#fff;">116 117</strong> Notdienst</a>
+    </div>
+  </div>
+</aside>
 
 <nav id="p2s-nav"></nav>
 
@@ -148,7 +238,8 @@
     <div class="pb-step"        id="pb-3"><div class="pb-num">3</div><div class="pb-label" id="step-lbl-3">Resolved</div></div>
   </div>
 
-  <div class="card">
+  <div class="triage-grid">
+    <div class="card">
 
     <!-- PHASE: Input -->
     <div id="ph-input" class="card-body">
@@ -245,6 +336,140 @@
       </div>
     </div>
 
+  </div><!-- closes .card -->
+
+  <!-- Statutory Coverage Box (Small Box with Accordion) -->
+  <aside class="statutory-sidebar no-print" style="position:sticky; top:calc(var(--nav-h) + 1.25rem);">
+      <div class="card" style="padding:1.25rem; background:#fff; border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow);">
+        
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; padding-bottom:10px; border-bottom:1px solid var(--border);">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--brand);"></span>
+            <span style="font-size:0.75rem; font-weight:800; letter-spacing:0.8px; text-transform:uppercase; color:var(--text);">Statutory Coverage</span>
+          </div>
+          <span style="font-size:0.7rem; font-family:monospace; font-weight:700; background:var(--bg-2); border:1px solid var(--border); padding:2px 8px; border-radius:6px; color:var(--muted);">8 Domains</span>
+        </div>
+
+        <div style="font-size:0.75rem; color:var(--muted); margin-bottom:10px; line-height:1.4;">
+          Click a domain to preview covered Berlin scenarios:
+        </div>
+
+        <div class="statutory-accordion" style="display:flex; flex-direction:column; gap:6px;">
+          <!-- 1 -->
+          <div class="domain-accordion-item">
+            <button type="button" class="domain-btn" onclick="toggleDomain(this)">
+              <span>1. Tenancy &amp; Housing Law</span>
+              <span class="domain-chevron">▼</span>
+            </button>
+            <div class="domain-content">
+              <p style="margin-top:8px;">Covers withheld Kaution deposits, heating/mold rent reductions (Mietminderung), illegal rent hikes, and disputes with landlords or property managers under German tenancy law.</p>
+              <button type="button" class="domain-example-chip" onclick="fillFromDomain('My landlord withheld my 1800 Euro Kaution deposit for 8 months after moving out and stopped answering all emails.')">
+                Try this scenario →
+              </button>
+            </div>
+          </div>
+
+          <!-- 2 -->
+          <div class="domain-accordion-item">
+            <button type="button" class="domain-btn" onclick="toggleDomain(this)">
+              <span>2. Facility &amp; Building</span>
+              <span class="domain-chevron">▼</span>
+            </button>
+            <div class="domain-content">
+              <p style="margin-top:8px;">Covers building-wide boiler/heating breakdown in winter, burst water pipes, locked fuse rooms, stuck elevators, and 24h Hausverwaltung emergency services (Havariedienst).</p>
+              <button type="button" class="domain-example-chip" onclick="fillFromDomain('Central heating in our apartment building completely stopped working today and it is freezing outside.')">
+                Try this scenario →
+              </button>
+            </div>
+          </div>
+
+          <!-- 3 -->
+          <div class="domain-accordion-item">
+            <button type="button" class="domain-btn" onclick="toggleDomain(this)">
+              <span>3. Utilities &amp; Grid</span>
+              <span class="domain-chevron">▼</span>
+            </button>
+            <div class="domain-content">
+              <p style="margin-top:8px;">Covers street-wide power blackouts (Stromnetz Berlin), municipal water main bursts (Berliner Wasserbetriebe), and acute gas smell reporting.</p>
+              <button type="button" class="domain-example-chip" onclick="fillFromDomain('Total blackout on our street in Neukölln, all building lights and streetlights went dark 30 minutes ago.')">
+                Try this scenario →
+              </button>
+            </div>
+          </div>
+
+          <!-- 4 -->
+          <div class="domain-accordion-item">
+            <button type="button" class="domain-btn" onclick="toggleDomain(this)">
+              <span>4. Bureaucracy &amp; LEA</span>
+              <span class="domain-chevron">▼</span>
+            </button>
+            <div class="domain-content">
+              <p style="margin-top:8px;">Covers urgent student residence permit & visa renewals (Landesamt für Einwanderung Berlin), address registration delays (Bürgeramt Anmeldung), and citizen hotline 115 inquiries.</p>
+              <button type="button" class="domain-example-chip" onclick="fillFromDomain('My German student residence permit expires in 12 days and there are no appointments visible on the LEA Berlin portal.')">
+                Try this scenario →
+              </button>
+            </div>
+          </div>
+
+          <!-- 5 -->
+          <div class="domain-accordion-item">
+            <button type="button" class="domain-btn" onclick="toggleDomain(this)">
+              <span>5. Health &amp; Medical Care</span>
+              <span class="domain-chevron">▼</span>
+            </button>
+            <div class="domain-content">
+              <p style="margin-top:8px;">Covers non-life-threatening urgent medical care when GP clinics are closed (116 117 on-call doctors), night emergency pharmacies, and Berlin psychiatric crisis services.</p>
+              <button type="button" class="domain-example-chip" onclick="fillFromDomain('Severe fever and back pain on Sunday morning, my Hausarzt is closed and I need an on-call doctor.')">
+                Try this scenario →
+              </button>
+            </div>
+          </div>
+
+          <!-- 6 -->
+          <div class="domain-accordion-item">
+            <button type="button" class="domain-btn" onclick="toggleDomain(this)">
+              <span>6. Consumer Protection</span>
+              <span class="domain-chevron">▼</span>
+            </button>
+            <div class="domain-content">
+              <p style="margin-top:8px;">Covers gym and mobile contract auto-renewal traps, threatening debt collection letters (Inkasso), misleading online orders, and advice from Verbraucherzentrale Berlin.</p>
+              <button type="button" class="domain-example-chip" onclick="fillFromDomain('A gym contract I cancelled 6 months ago sent an Inkasso debt collector demanding 400 Euros.')">
+                Try this scenario →
+              </button>
+            </div>
+          </div>
+
+          <!-- 7 -->
+          <div class="domain-accordion-item">
+            <button type="button" class="domain-btn" onclick="toggleDomain(this)">
+              <span>7. IT &amp; Telecom</span>
+              <span class="domain-chevron">▼</span>
+            </button>
+            <div class="domain-content">
+              <p style="margin-top:8px;">Covers home internet bandwidth below contract speed (Bundesnetzagentur Breitbandmessung), unjustified ISP contract roll-overs, and prolonged DSL/fiber outages.</p>
+              <button type="button" class="domain-example-chip" onclick="fillFromDomain('My home Wi-Fi and DSL internet has been down for 5 consecutive days and the provider customer service is not answering.')">
+                Try this scenario →
+              </button>
+            </div>
+          </div>
+
+          <!-- 8 -->
+          <div class="domain-accordion-item">
+            <button type="button" class="domain-btn" onclick="toggleDomain(this)">
+              <span>8. Appliances &amp; Crafts</span>
+              <span class="domain-chevron">▼</span>
+            </button>
+            <div class="domain-content">
+              <p style="margin-top:8px;">Covers finding certified, verified master craftspeople (electricians, plumbers, heating technicians) through the official Handwerkskammer Berlin register to prevent contractor scams.</p>
+              <button type="button" class="domain-example-chip" onclick="fillFromDomain('Need a certified master electrician to inspect faulty bathroom wiring after a minor electrical short.')">
+                Try this scenario →
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </aside>
   </div>
 </div>
 
@@ -287,6 +512,23 @@ function updatePageLanguage(lang) {
 function fill(chip) {
   document.getElementById('prob-input').value = chip.textContent.replace(/^[^\w]+/,'').trim();
   document.getElementById('prob-input').focus();
+}
+
+function toggleDomain(btn) {
+  const item = btn.closest('.domain-accordion-item');
+  const wasOpen = item.classList.contains('open');
+  document.querySelectorAll('.domain-accordion-item').forEach(el => el.classList.remove('open'));
+  if (!wasOpen) {
+    item.classList.add('open');
+  }
+}
+
+function fillFromDomain(text) {
+  const input = document.getElementById('prob-input');
+  if (input) {
+    input.value = text;
+    input.focus();
+  }
 }
 
 function setStep(n) {

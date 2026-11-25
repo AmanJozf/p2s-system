@@ -107,9 +107,14 @@
                   <label class="label">Domain *</label>
                   <select class="input" id="f-domain" required>
                     <option value="">Select domain…</option>
-                    <option>Housing</option>
-                    <option>IT</option>
-                    <option>Appliances</option>
+                    <option value="Tenancy & Housing Law">Tenancy & Housing Law</option>
+                    <option value="Facility & Building Emergencies">Facility & Building Emergencies</option>
+                    <option value="Utilities & Energy Crises">Utilities & Energy Crises</option>
+                    <option value="Bureaucracy & Immigration">Bureaucracy & Immigration</option>
+                    <option value="Health & Medical Care">Health & Medical Care</option>
+                    <option value="Consumer Protection & Contracts">Consumer Protection & Contracts</option>
+                    <option value="IT, Telecom & Connectivity">IT, Telecom & Connectivity</option>
+                    <option value="Home Appliances & Craftspeople">Home Appliances & Craftspeople</option>
                   </select>
                 </div>
                 <div class="form-field full">
@@ -332,25 +337,24 @@ async function checkStatus() {
   } catch {
     document.getElementById('gemini-status').innerHTML = '<span class="status-dot dot-red"></span><strong>Unavailable</strong>';
   }
-  // Ollama
-  try {
-    const r = await fetch('/api/admin/ollama-status');
-    const d = await r.json();
+  // Ollama & KB in parallel
+  const pOllama = fetch('/api/admin/ollama-status').then(r=>r.json()).then(d=>{
     if (d.available) {
       const modelCount = d.models ? d.models.length : 0;
       document.getElementById('ollama-status').innerHTML = `<span class="status-dot dot-green"></span><strong>Running (${modelCount} models available)</strong>`;
     } else {
       document.getElementById('ollama-status').innerHTML = '<span class="status-dot dot-red"></span><strong>Not running — start Ollama to enable</strong>';
     }
-  } catch {
+  }).catch(()=>{
     document.getElementById('ollama-status').innerHTML = '<span class="status-dot dot-red"></span><strong>Not running</strong>';
-  }
-  // KB count
-  try {
-    const data = await fetch('/api/services').then(r=>r.json());
+  });
+
+  const pKb = fetch('/api/services').then(r=>r.json()).then(data=>{
     const count = Object.values(data.services).reduce((a,b)=>a+b.length,0);
     document.getElementById('kb-count').innerHTML = `<strong>${count} entries</strong>`;
-  } catch {}
+  }).catch(()=>{});
+
+  await Promise.all([pOllama, pKb]);
 }
 
 async function saveConfig() {

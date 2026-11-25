@@ -225,6 +225,13 @@ SERVICES_DATABASE = {
             "official_link": "https://www.zdh.de",
             "is_free": False,
             "region": "Germany-wide"
+        },
+        {
+            "name": "Innung SHK Berlin (Sanitär, Heizung, Klempner)",
+            "role": "Official guild registry for verified master plumbers, heating technicians, and climate installers in Berlin",
+            "official_link": "https://www.shk-berlin.de",
+            "is_free": True,
+            "region": "Berlin"
         }
     ]
 }
