@@ -12,8 +12,13 @@ from backend.llm_providers import LLMError, OllamaProvider, get_provider, get_ac
 from backend.knowledge_base import SERVICES_DATABASE
 from backend.database import init_db, log_session, get_stats, clear_sessions, add_service_db
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # ── Init ──────────────────────────────────────────────────────────────────────
-init_db()
+try:
+    init_db()
+except Exception as e:
+    print(f"Database init warning: {e}")
 
 app = FastAPI(
     title="P2S — Problem to Service API",
@@ -29,18 +34,20 @@ app.add_middleware(
 )
 
 # ── Static files ──────────────────────────────────────────────────────────────
-app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
+static_dir = os.path.join(BASE_DIR, "frontend", "static")
+if os.path.exists(static_dir):
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 # ── Frontend page routes ──────────────────────────────────────────────────────
 PAGES = {
-    "/":          "frontend/index.html",
-    "/triage":    "frontend/triage.html",
-    "/services":  "frontend/services.html",
-    "/dashboard": "frontend/dashboard.html",
-    "/history":   "frontend/history.html",
-    "/about":     "frontend/about.html",
-    "/admin":     "frontend/admin.html",
-    "/preview":   "frontend/preview.html",
+    "/":          os.path.join(BASE_DIR, "frontend", "index.html"),
+    "/triage":    os.path.join(BASE_DIR, "frontend", "triage.html"),
+    "/services":  os.path.join(BASE_DIR, "frontend", "services.html"),
+    "/dashboard": os.path.join(BASE_DIR, "frontend", "dashboard.html"),
+    "/history":   os.path.join(BASE_DIR, "frontend", "history.html"),
+    "/about":     os.path.join(BASE_DIR, "frontend", "about.html"),
+    "/admin":     os.path.join(BASE_DIR, "frontend", "admin.html"),
+    "/preview":   os.path.join(BASE_DIR, "frontend", "preview.html"),
 }
 
 for route, filepath in PAGES.items():

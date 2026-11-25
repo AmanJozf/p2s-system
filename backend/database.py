@@ -4,7 +4,11 @@ SQLite database layer for P2S — stores triage sessions for analytics.
 import sqlite3
 import os
 
-DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'p2s_data.db')
+# Serverless environments (like Vercel or AWS Lambda) have read-only root filesystems
+if os.environ.get("VERCEL") or os.environ.get("AWS_LAMBDA_FUNCTION_NAME"):
+    DB_PATH = "/tmp/p2s_data.db"
+else:
+    DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'p2s_data.db')
 
 def get_conn():
     conn = sqlite3.connect(DB_PATH)
