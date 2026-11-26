@@ -193,26 +193,36 @@ function renderServices() {
       ? `<span class="tag tag-success">${isDe ? 'Kostenlos' : 'Free'}</span>`
       : `<span class="tag tag-neutral">${isDe ? 'Kostenpflichtig' : 'Paid'}</span>`;
 
-    const buttonLabel = s.official_link?.startsWith('tel:') 
-      ? (isDe ? 'Notruf anrufen' : 'Call Hotline')
-      : (isDe ? 'Portal öffnen →' : 'Visit Portal →');
+    const isPhone = s.official_link?.startsWith('tel:') || !!s.phone;
+    const phoneNum = s.phone || (s.official_link?.startsWith('tel:') ? s.official_link.replace('tel:', '') : null);
+
+    const typeBadge = isPhone
+      ? `<span class="tag" style="background:#FEE2E2; color:#991B1B; font-weight:800; font-size:0.68rem;">📞 ${isDe ? 'TELEFON-HOTLINE' : 'PHONE HOTLINE'}</span>`
+      : `<span class="tag" style="background:#EFF6FF; color:#1D4ED8; font-weight:700; font-size:0.68rem;">🌐 ${isDe ? 'WEBPORTAL' : 'WEB PORTAL'}</span>`;
+
+    const actionBtn = isPhone && phoneNum
+      ? `<a href="tel:${phoneNum}" class="btn btn-sm" style="background:#DC2626; color:#fff; font-weight:700; text-decoration:none;">📞 ${isDe ? 'Anrufen' : 'Call'} (${phoneNum})</a>`
+      : (s.official_link?.startsWith('http')
+          ? `<a href="${s.official_link}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-secondary">${isDe ? 'Portal öffnen →' : 'Visit Portal →'}</a>`
+          : `<span class="tag tag-neutral" style="font-size:0.75rem;">📋 Hausaushang 24h</span>`);
 
     return `
-      <div class="svc-card">
+      <div class="svc-card" style="${isPhone ? 'border-top:3px solid #EF4444;' : ''}">
         <div class="svc-card-top">
-          <div class="svc-card-icon">${s.icon}</div>
+          <div class="svc-card-icon" style="${isPhone ? 'background:#FEE2E2; color:#DC2626;' : ''}">${isPhone ? '📞' : s.icon}</div>
           <div>
-            <div class="svc-card-name">${s.name}</div>
-            <div style="margin-top:4px;">${domainTag(s.domain)}</div>
+            <div class="svc-card-name" style="font-weight:700;">${s.name}</div>
+            <div style="margin-top:6px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+              ${domainTag(s.domain)}
+              ${typeBadge}
+            </div>
           </div>
         </div>
         <div class="svc-card-body">
           <div class="svc-card-role">${s.role}</div>
-          <div class="svc-card-foot">
+          <div class="svc-card-foot" style="margin-top:12px;">
             ${costTag}
-            ${s.official_link?.startsWith('http') || s.official_link?.startsWith('tel:') 
-              ? `<a href="${s.official_link}" target="_blank" class="btn btn-sm btn-secondary">${buttonLabel}</a>`
-              : `<span class="tag tag-neutral" style="font-size:0.75rem;">📋 Hausaushang 24h</span>`}
+            ${actionBtn}
           </div>
         </div>
       </div>`;

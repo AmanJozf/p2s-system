@@ -148,6 +148,7 @@ def match_services_for_domain(domain: str, top_retrieved: list[dict] | None = No
             role=s["role"],
             official_link=s["official_link"],
             is_free=s["is_free"],
+            phone=s.get("phone"),
             region=s.get("region", "Berlin / Germany"),
             relevance_score=90,
         )

@@ -821,16 +821,55 @@ function renderResult(data) {
     </div>`).join('');
 
   const sv = document.getElementById('r-services');
-  const icons=['🏛️','🏢','🏥','⚡','📞','💻','⚙️','🛡️'];
-  sv.innerHTML = (data.recommended_services||[]).map((s,i)=>`
-    <a class="service-link" href="${s.official_link?.startsWith('http')||s.official_link?.startsWith('tel:')?s.official_link:'#'}" target="_blank">
-      <div class="svc-logo">${icons[i%icons.length]}</div>
-      <div style="flex:1;">
-        <div class="svc-name">${s.name}</div>
-        <div class="svc-role">${s.role}</div>
-      </div>
-      <span class="svc-free tag ${s.is_free?'tag-success':'tag-neutral'}">${s.is_free?(currentLang==='de'?'Kostenlos':'Free'):(currentLang==='de'?'Gebühren':'Paid')}</span>
-    </a>`).join('');
+  const icons = ['🏛️','🏢','🏥','⚡','📞','💻','⚙️','🛡️'];
+  sv.innerHTML = (data.recommended_services || []).map((s, i) => {
+    const isPhone = !!(s.phone || s.official_link?.startsWith('tel:'));
+    const phoneNum = s.phone || (s.official_link?.startsWith('tel:') ? s.official_link.replace('tel:', '') : null);
+    const costText = s.is_free ? (currentLang === 'de' ? 'Kostenlos' : 'Free') : (currentLang === 'de' ? 'Gebühren' : 'Paid');
+    const costClass = s.is_free ? 'tag-success' : 'tag-neutral';
+
+    if (isPhone && phoneNum) {
+      return `
+        <div class="service-link service-phone-card" style="cursor:default; border-left:4px solid #EF4444; background:#FFFDFD; border-radius:10px; padding:12px 14px;">
+          <div class="svc-logo" style="background:#FEE2E2; color:#DC2626; font-size:1.2rem;">📞</div>
+          <div style="flex:1;">
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <span class="svc-name" style="font-weight:700;">${s.name}</span>
+              <span class="tag" style="background:#FEE2E2; color:#991B1B; font-weight:800; font-size:0.7rem; letter-spacing:0.4px;">
+                📞 ${currentLang === 'de' ? 'TELEFON-HOTLINE' : 'PHONE HOTLINE'}
+              </span>
+            </div>
+            <div class="svc-role" style="margin-top:2px;">${s.role}</div>
+            <div style="margin-top:8px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <a href="tel:${phoneNum}" class="btn btn-sm" style="background:#DC2626; color:#fff; border-radius:6px; padding:4px 12px; text-decoration:none; font-weight:700; display:inline-flex; align-items:center; gap:6px;">
+                📞 ${currentLang === 'de' ? 'Jetzt anrufen' : 'Call Hotline'} (${phoneNum})
+              </a>
+              <button type="button" class="btn btn-sm btn-ghost" onclick="copyPhone('${phoneNum}')" style="font-size:0.75rem; padding:3px 10px; border:1px solid var(--border); border-radius:6px; cursor:pointer;">
+                📋 ${currentLang === 'de' ? 'Nummer kopieren' : 'Copy Number'}
+              </button>
+            </div>
+          </div>
+          <span class="svc-free tag ${costClass}">${costText}</span>
+        </div>`;
+    }
+
+    const isWeb = s.official_link?.startsWith('http');
+    const linkHref = isWeb ? s.official_link : '#';
+    return `
+      <a class="service-link" href="${linkHref}" ${isWeb ? 'target="_blank" rel="noopener noreferrer"' : ''} style="border-radius:10px; padding:12px 14px;">
+        <div class="svc-logo">${icons[i % icons.length]}</div>
+        <div style="flex:1;">
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <span class="svc-name" style="font-weight:700;">${s.name}</span>
+            <span class="tag" style="background:#EFF6FF; color:#1D4ED8; font-weight:700; font-size:0.7rem;">
+              🌐 ${currentLang === 'de' ? 'WEBPORTAL' : 'WEB PORTAL'}
+            </span>
+          </div>
+          <div class="svc-role" style="margin-top:2px;">${s.role}</div>
+        </div>
+        <span class="svc-free tag ${costClass}">${costText}</span>
+      </a>`;
+  }).join('');
 
   show('ph-result'); setStep(3);
   setTimeout(()=>document.querySelector('.card').scrollIntoView({behavior:'smooth',block:'start'}),100);
@@ -849,6 +888,18 @@ function exportToPDF() {
   document.getElementById('print-ref').textContent = `CASE REF: P2S-${(S.sessionId||'BER').toUpperCase()}`;
   document.getElementById('print-date').textContent = new Date().toLocaleString(currentLang==='de'?'de-DE':'en-GB');
   window.print();
+}
+
+function copyPhone(num) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(num).then(() => {
+      showToast(currentLang === 'de' ? `📋 Nummer ${num} kopiert!` : `📋 Number ${num} copied to clipboard!`);
+    }).catch(() => {
+      showToast(`📞 ${num}`);
+    });
+  } else {
+    showToast(`📞 ${num}`);
+  }
 }
 
 function resetTriage() {
