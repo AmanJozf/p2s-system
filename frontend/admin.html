@@ -145,12 +145,15 @@
         <div class="card admin-panel" id="panel-config">
           <div class="card-header"><span class="panel-title" style="margin:0;">🔧 System Configuration</span></div>
           <div class="card-body">
+            <div id="cloud-env-notice" style="display:none;margin-bottom:1rem;padding:0.75rem 1rem;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;font-size:0.85rem;color:#1E40AF;line-height:1.45;">
+              ℹ️ <strong>Live Cloud Deployment (Vercel):</strong> Gemini Cloud AI is active. To test Ollama (Local Offline AI), run P2S locally on your laptop at <a href="http://127.0.0.1:8000/admin" target="_blank" style="font-weight:700;text-decoration:underline;color:#1E40AF;">http://127.0.0.1:8000/admin</a>.
+            </div>
             <div class="form-grid">
               <div class="form-field full">
                 <label class="label">AI Provider</label>
                 <select class="input" id="cfg-provider" onchange="updateProviderVisibility()">
                   <option value="gemini">☁️ Gemini (Cloud — Online)</option>
-                  <option value="ollama">🔒 Ollama (Local — Offline)</option>
+                  <option value="ollama">🔒 Ollama (Local — Offline on 127.0.0.1)</option>
                 </select>
               </div>
               <div class="form-field full" id="box-gemini-model">
@@ -301,6 +304,11 @@ function updateProviderVisibility() {
 }
 
 async function loadConfig() {
+  const isCloud = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+  const notice = document.getElementById('cloud-env-notice');
+  if (notice && isCloud) {
+    notice.style.display = 'block';
+  }
   try {
     const [pRes, oRes] = await Promise.all([
       fetch('/api/admin/provider').then(r => r.json()),
