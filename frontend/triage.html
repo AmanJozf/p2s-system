@@ -201,7 +201,7 @@
   <div style="max-width:1120px; margin:0 auto; padding:0 1.25rem; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px;">
     <div style="display:flex; align-items:center; gap:8px;">
       <span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#34D399; box-shadow:0 0 6px rgba(52,211,153,.6);"></span>
-      <span style="color:#CBD5E1; font-weight:600;">Berlin Emergency Services</span>
+      <span style="color:#CBD5E1; font-weight:600;" id="ui-emergency-banner-title">Berlin Emergency Services</span>
     </div>
     <div style="display:flex; align-items:center; gap:16px; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;">
       <a href="tel:112" style="color:#E2E8F0; text-decoration:none;"><strong style="color:#fff;">112</strong> Feuerwehr</a>
@@ -345,16 +345,16 @@
         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; padding-bottom:10px; border-bottom:1px solid var(--border);">
           <div style="display:flex; align-items:center; gap:8px;">
             <span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--brand);"></span>
-            <span style="font-size:0.75rem; font-weight:800; letter-spacing:0.8px; text-transform:uppercase; color:var(--text);">Statutory Coverage</span>
+            <span style="font-size:0.75rem; font-weight:800; letter-spacing:0.8px; text-transform:uppercase; color:var(--text);" id="ui-sidebar-title">Statutory Coverage</span>
           </div>
-          <span style="font-size:0.7rem; font-family:monospace; font-weight:700; background:var(--bg-2); border:1px solid var(--border); padding:2px 8px; border-radius:6px; color:var(--muted);">8 Domains</span>
+          <span style="font-size:0.7rem; font-family:monospace; font-weight:700; background:var(--bg-2); border:1px solid var(--border); padding:2px 8px; border-radius:6px; color:var(--muted);" id="ui-sidebar-badge">8 Domains</span>
         </div>
 
-        <div style="font-size:0.75rem; color:var(--muted); margin-bottom:10px; line-height:1.4;">
+        <div style="font-size:0.75rem; color:var(--muted); margin-bottom:10px; line-height:1.4;" id="ui-sidebar-hint">
           Click a domain to preview covered Berlin scenarios:
         </div>
 
-        <div class="statutory-accordion" style="display:flex; flex-direction:column; gap:6px;">
+        <div class="statutory-accordion" id="statutory-accordion" style="display:flex; flex-direction:column; gap:6px;">
           <!-- 1 -->
           <div class="domain-accordion-item">
             <button type="button" class="domain-btn" onclick="toggleDomain(this)">
@@ -480,6 +480,111 @@
 const API = '';
 let S = { sessionId:null, problem:null, question:null, answer:null, lastResult:null };
 
+const DOMAIN_SIDEBAR_DATA = {
+  en: {
+    sidebar_title: 'Statutory Coverage',
+    sidebar_badge: '8 Domains',
+    sidebar_hint: 'Click a domain to preview covered Berlin scenarios:',
+    sample_scenarios: 'Sample Scenarios',
+    loading_title: 'Evaluating situation in Berlin...',
+    loading_subtitle: 'Checking legal context (§ BGB / Berlin ordinances) and matching verified emergency & advice services.',
+    try_btn: 'Try this scenario →',
+    domains: [
+      {
+        title: '1. Tenancy & Housing Law',
+        desc: 'Covers withheld Kaution deposits, heating/mold rent reductions (Mietminderung), illegal rent hikes, and disputes with landlords or property managers under German tenancy law.',
+        scenario: 'My landlord withheld my 1800 Euro Kaution deposit for 8 months after moving out and stopped answering all emails.'
+      },
+      {
+        title: '2. Facility & Building',
+        desc: 'Covers building-wide boiler/heating breakdown in winter, burst water pipes, locked fuse rooms, stuck elevators, and 24h Hausverwaltung emergency services (Havariedienst).',
+        scenario: 'Central heating in our apartment building completely stopped working today and it is freezing outside.'
+      },
+      {
+        title: '3. Utilities & Grid',
+        desc: 'Covers street-wide power blackouts (Stromnetz Berlin), municipal water main bursts (Berliner Wasserbetriebe), and acute gas smell reporting.',
+        scenario: 'Total blackout on our street in Neukölln, all building lights and streetlights went dark 30 minutes ago.'
+      },
+      {
+        title: '4. Bureaucracy & LEA',
+        desc: 'Covers urgent student residence permit & visa renewals (Landesamt für Einwanderung Berlin), address registration delays (Bürgeramt Anmeldung), and citizen hotline 115 inquiries.',
+        scenario: 'My German student residence permit expires in 12 days and there are no appointments visible on the LEA Berlin portal.'
+      },
+      {
+        title: '5. Health & Medical Care',
+        desc: 'Covers non-life-threatening urgent medical care when GP clinics are closed (116 117 on-call doctors), night emergency pharmacies, and Berlin psychiatric crisis services.',
+        scenario: 'Severe fever and back pain on Sunday morning, my Hausarzt is closed and I need an on-call doctor.'
+      },
+      {
+        title: '6. Consumer Protection',
+        desc: 'Covers gym and mobile contract auto-renewal traps, threatening debt collection letters (Inkasso), misleading online orders, and advice from Verbraucherzentrale Berlin.',
+        scenario: 'A gym contract I cancelled 6 months ago sent an Inkasso debt collector demanding 400 Euros.'
+      },
+      {
+        title: '7. IT & Telecom',
+        desc: 'Covers home internet bandwidth below contract speed (Bundesnetzagentur Breitbandmessung), unjustified ISP contract roll-overs, and prolonged DSL/fiber outages.',
+        scenario: 'My home Wi-Fi and DSL internet has been down for 5 consecutive days and the provider customer service is not answering.'
+      },
+      {
+        title: '8. Appliances & Crafts',
+        desc: 'Covers finding certified, verified master craftspeople (electricians, plumbers, heating technicians) through the official Handwerkskammer Berlin register to prevent contractor scams.',
+        scenario: 'Need a certified master electrician to inspect faulty bathroom wiring after a minor electrical short.'
+      }
+    ]
+  },
+  de: {
+    sidebar_title: 'Gesetzliche Abdeckung',
+    sidebar_badge: '8 Fachbereiche',
+    sidebar_hint: 'Bereich anklicken für Berliner Fallbeispiele:',
+    sample_scenarios: 'Beispielszenarien',
+    loading_title: 'Situation in Berlin wird analysiert...',
+    loading_subtitle: 'Rechtliche Grundlagen (§ BGB / Verordnungen) & zuständige Stellen werden geprüft.',
+    try_btn: 'Beispielszenario testen →',
+    domains: [
+      {
+        title: '1. Miet- & Wohnungsrecht',
+        desc: 'Umfasst einbehaltene Mietkautionen, Mietminderung wegen Heizungsausfall/Schimmel (§ 536 BGB), unzulässige Mieterhöhungen und Streitigkeiten mit Vermietern oder Hausverwaltungen.',
+        scenario: 'Mein Vermieter hält meine Kaution von 1.800 Euro seit 8 Monaten nach dem Auszug grundlos ein und antwortet nicht mehr.'
+      },
+      {
+        title: '2. Gebäude & Havariedienst',
+        desc: 'Umfasst gebäudeweite Heizungs- oder Warmwasserausfälle im Winter, Wasserrohrbrüche, verschlossene Zählerräume, steckengebliebene Aufzüge und den 24h-Havariedienst der Hausverwaltung.',
+        scenario: 'Die Zentralheizung in unserem Wohnhaus ist heute komplett ausgefallen und es herrschen Minusgrade.'
+      },
+      {
+        title: '3. Energie- & Wasserversorgung',
+        desc: 'Umfasst straßenweite Stromausfälle (Stromnetz Berlin), Hauptwasserrohrbrüche (Berliner Wasserbetriebe) und Störungsmeldungen bei Gasgeruch.',
+        scenario: 'Kompletter Stromausfall in unserer Straße in Neukölln, alle Haus- und Straßenlaternen sind seit 30 Minuten dunkel.'
+      },
+      {
+        title: '4. Bürgeramt & LEA Berlin',
+        desc: 'Umfasst dringende Aufenthaltstitel- und Visaverlängerungen (Landesamt für Einwanderung), Verzögerungen bei der Wohnsitzanmeldung und Bürgertelefon 115.',
+        scenario: 'Mein deutsches Studentenvisum läuft in 12 Tagen ab und im Terminportal des LEA Berlin ist kein Termin verfügbar.'
+      },
+      {
+        title: '5. Gesundheit & Bereitschaftsdienst',
+        desc: 'Umfasst dringende ambulante Versorgung außerhalb der Praxisöffnungszeiten (116 117 Bereitschaftsärzte), Notapotheken und Berliner Krisendienste.',
+        scenario: 'Hohes Fieber und starke Schmerzen am Sonntagmorgen, mein Hausarzt hat geschlossen und ich brauche einen Bereitschaftsarzt.'
+      },
+      {
+        title: '6. Verbraucherschutz',
+        desc: 'Umfasst automatische Vertragsverlängerungen bei Fitnessstudios und Mobilfunk, Inkassomahnungen, Abo-Fallen und Beratung durch die Verbraucherzentrale Berlin.',
+        scenario: 'Ein vor 6 Monaten gekündigter Fitnessstudiovertrag schickt ein Inkassoschreiben mit einer Forderung von 400 Euro.'
+      },
+      {
+        title: '7. IT & Telekommunikation',
+        desc: 'Umfasst Minderungsansprüche bei zu geringer Internet-Bandbreite (Bundesnetzagentur Breitbandmessung), DSL-/Glasfaserausfälle und Router-Störungen.',
+        scenario: 'Mein Festnetz-Internet und WLAN ist seit 5 Tagen komplett tot und die Hotline vertröstet mich nur.'
+      },
+      {
+        title: '8. Geräte & Handwerk',
+        desc: 'Umfasst die Vermittlung geprüfter Berliner Meisterbetriebe (Elektriker, Sanitär, Heizung) über das HWK-Register zur Vermeidung unseriöser Notdienst-Abzocke.',
+        scenario: 'Benötige einen zertifizierten Elektromeisterbetrieb zur Überprüfung der Badezimmer-Verkabelung nach einem Kurzschluss.'
+      }
+    ]
+  }
+};
+
 function updatePageLanguage(lang) {
   const t = I18N[lang] || I18N.en;
   document.getElementById('ui-title').textContent = t.triage_title;
@@ -507,6 +612,42 @@ function updatePageLanguage(lang) {
   // Render localized chips
   const chipsContainer = document.getElementById('chips-container');
   chipsContainer.innerHTML = t.chips.map(c => `<span class="chip" onclick="fill(this)">${c}</span>`).join('');
+
+  // Render localized Statutory Coverage Sidebar & Loading
+  const side = DOMAIN_SIDEBAR_DATA[lang] || DOMAIN_SIDEBAR_DATA.en;
+  const sbTitle = document.getElementById('ui-sidebar-title');
+  if (sbTitle) sbTitle.textContent = side.sidebar_title;
+  const sbBadge = document.getElementById('ui-sidebar-badge');
+  if (sbBadge) sbBadge.textContent = side.sidebar_badge;
+  const sbHint = document.getElementById('ui-sidebar-hint');
+  if (sbHint) sbHint.textContent = side.sidebar_hint;
+  const chipToggle = document.getElementById('chips-toggle-text');
+  if (chipToggle) chipToggle.textContent = side.sample_scenarios;
+  const loadTitle = document.getElementById('ui-loading-title');
+  if (loadTitle) loadTitle.textContent = side.loading_title;
+  const loadSub = document.getElementById('ui-loading-sub');
+  if (loadSub) loadSub.textContent = side.loading_subtitle;
+
+  const ebTitle = document.getElementById('ui-emergency-banner-title');
+  if (ebTitle) ebTitle.textContent = lang==='de' ? 'Berliner Notdienste' : 'Berlin Emergency Services';
+
+  const accord = document.getElementById('statutory-accordion');
+  if (accord) {
+    accord.innerHTML = side.domains.map((d) => `
+      <div class="domain-accordion-item">
+        <button type="button" class="domain-btn" onclick="toggleDomain(this)">
+          <span>${d.title}</span>
+          <span class="domain-chevron">▼</span>
+        </button>
+        <div class="domain-content">
+          <p style="margin-top:8px;">${d.desc}</p>
+          <button type="button" class="domain-example-chip" onclick="fillFromDomain('${d.scenario.replace(/'/g, "\\'")}')">
+            ${side.try_btn}
+          </button>
+        </div>
+      </div>
+    `).join('');
+  }
 }
 
 function fill(chip) {
@@ -545,20 +686,43 @@ function show(id) {
   document.getElementById(id).classList.remove('hidden');
 }
 
+async function fetchWithRetry(url, options, retries = 2) {
+  for (let i = 0; i <= retries; i++) {
+    try {
+      const res = await fetch(url, options);
+      if (res.ok) return res;
+      if (i < retries && (res.status === 500 || res.status === 503 || res.status === 504 || res.status === 429)) {
+        await new Promise(r => setTimeout(r, 1000 * (i + 1)));
+        continue;
+      }
+      return res;
+    } catch (e) {
+      if (i < retries) {
+        await new Promise(r => setTimeout(r, 1000 * (i + 1)));
+        continue;
+      }
+      throw e;
+    }
+  }
+}
+
 async function submitProblem() {
   const prob = document.getElementById('prob-input').value.trim();
   if (!prob) { document.getElementById('prob-input').focus(); return; }
   S.problem = prob;
   show('ph-loading'); setStep(2);
   try {
-    const res = await fetch(`${API}/api/triage/start`, {
+    const res = await fetchWithRetry(`${API}/api/triage/start`, {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ problem_description: prob })
+      body: JSON.stringify({ problem_description: prob, language: currentLang })
     });
-    if (!res.ok) throw new Error(res.status);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || `Server returned ${res.status}`);
+    }
     handleResponse(await res.json());
   } catch(e) {
-    showToast(currentLang==='de'?'❌ Verbindungsfehler. Läuft der Server?':'❌ Connection error. Is the server running?');
+    showToast(currentLang==='de' ? '❌ ' + (e.message || 'Verbindung fehlgeschlagen') : '❌ ' + (e.message || 'Connection error'));
     show('ph-input'); setStep(1);
   }
 }
@@ -572,7 +736,8 @@ function handleResponse(data) {
     opts.innerHTML = '';
     S.answer = null;
     if (data.suggested_options?.length) {
-      data.suggested_options.forEach(o => {
+      const uniqueOptions = [...new Set(data.suggested_options.map(o => (o || '').trim()).filter(Boolean))];
+      uniqueOptions.forEach(o => {
         const b = document.createElement('button');
         b.className = 'option-btn'; b.textContent = o;
         b.onclick = () => {
@@ -599,14 +764,17 @@ async function submitAnswer() {
   }
   show('ph-loading');
   try {
-    const res = await fetch(`${API}/api/triage/answer`, {
+    const res = await fetchWithRetry(`${API}/api/triage/answer`, {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ session_id:S.sessionId, original_problem:S.problem, previous_question:S.question, user_answer:ans })
+      body: JSON.stringify({ session_id:S.sessionId, original_problem:S.problem, previous_question:S.question, user_answer:ans, language: currentLang })
     });
-    if (!res.ok) throw new Error(res.status);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || `Server returned ${res.status}`);
+    }
     renderResult(await res.json());
   } catch(e) {
-    showToast('❌ Error. Please try again.'); show('ph-question');
+    showToast('❌ ' + (e.message || 'Error. Please try again.')); show('ph-question');
   }
 }
 
@@ -749,6 +917,7 @@ function toggleVoice() {
 document.getElementById('prob-input').addEventListener('keydown', e => {
   if (e.key==='Enter' && e.ctrlKey) submitProblem();
 });
+updatePageLanguage(currentLang);
 </script>
 </body>
 </html>

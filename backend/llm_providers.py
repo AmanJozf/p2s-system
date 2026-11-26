@@ -50,7 +50,7 @@ class GeminiProvider:
         last_err = None
         # Fallback cascade to avoid 503 "model high demand" traffic spikes
         candidate_models = [self.model]
-        for m in ["gemini-3.5-flash", "gemini-3.5-flash-lite"]:
+        for m in ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-3.5-flash-lite", "gemini-3.5-flash"]:
             if m not in candidate_models:
                 candidate_models.append(m)
 
@@ -72,14 +72,19 @@ class GeminiProvider:
                 except Exception as e:
                     last_err = e
                     msg = str(e)
-                    # If 503 unavailable, failover immediately to next candidate model
-                    if any(code in msg for code in ("503", "UNAVAILABLE", "504", "DEADLINE")):
+                    # If 503 unavailable or 429 quota, failover immediately to next model
+                    if any(code in msg for code in ("503", "UNAVAILABLE", "504", "DEADLINE", "429", "RESOURCE_EXHAUSTED")):
                         break
-                    if "429" in msg or "RESOURCE_EXHAUSTED" in msg:
-                        m_wait = re.search(r"retry in ([\d.]+)s", msg)
-                        time.sleep(min(float(m_wait.group(1)) + 0.5 if m_wait else 2.0, 5.0))
-                        continue
                     break
+
+        # Fallback to local Ollama if installed and running
+        try:
+            ollama = OllamaProvider()
+            if ollama.is_available():
+                return ollama.generate_json(prompt, system=system, schema=schema)
+        except Exception:
+            pass
+
         raise LLMError(f"Gemini request failed: {last_err}")
 
 

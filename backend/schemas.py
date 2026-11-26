@@ -3,12 +3,14 @@ from typing import List, Optional
 
 class ProblemRequest(BaseModel):
     problem_description: str = Field(..., description="The user's raw problem description in plain everyday language.")
+    language: Optional[str] = Field("en", description="Target language ('en' or 'de')")
 
 class ClarificationRequest(BaseModel):
     session_id: str
     original_problem: str
     previous_question: str
     user_answer: str
+    language: Optional[str] = Field("en", description="Target language ('en' or 'de')")
 
 class MatchedService(BaseModel):
     name: str

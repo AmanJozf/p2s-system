@@ -64,12 +64,14 @@ for route, filepath in PAGES.items():
 def start_triage(request: ProblemRequest):
     """Submit a plain-language problem. Returns follow-up question or resolved checklist."""
     try:
-        result = triage_initial_problem(request.problem_description)
+        result = triage_initial_problem(request.problem_description, language=request.language or "en")
         log_session(result.session_id, result.domain, result.urgency, result.status, result.specific_issue)
         return result
     except LLMError as e:
         raise HTTPException(status_code=503, detail=str(e))
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Triage engine error: {str(e)}")
 
 @app.post("/api/triage/answer", response_model=TriageResponse, tags=["Triage"])
@@ -82,6 +84,8 @@ def answer_clarification(request: ClarificationRequest):
     except LLMError as e:
         raise HTTPException(status_code=503, detail=str(e))
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Triage engine error: {str(e)}")
 
 # ── Services Endpoint ─────────────────────────────────────────────────────────
